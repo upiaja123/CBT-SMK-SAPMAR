@@ -24,6 +24,7 @@ class Exam extends Model
         'random_option',
         'review_summary',
         'created_by',
+        'results_published_at',
     ];
 
     protected function casts(): array
@@ -31,6 +32,7 @@ class Exam extends Model
         return [
             'start_at' => 'datetime',
             'end_at' => 'datetime',
+            'results_published_at' => 'datetime',
             'random_question' => 'boolean',
             'random_option' => 'boolean',
             'review_summary' => 'boolean',

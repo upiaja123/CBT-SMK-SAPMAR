@@ -97,6 +97,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('exams/{exam}/attempts/{attempt}/submit', [\App\Http\Controllers\ExamAttemptController::class, 'submit'])->name('exams.attempts.submit');
 
     // Phase 2.4D: Result & Finalization
+    Route::get('reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
     Route::get('exams/{exam}/attempts/{attempt}/result', [\App\Http\Controllers\ExamAttemptController::class, 'result'])->name('exams.attempts.result');
     Route::get('exams/{exam}/results', [\App\Http\Controllers\ExamResultController::class, 'index'])->name('exams.results.index');
     Route::post('exams/{exam}/results/publish', [\App\Http\Controllers\ExamResultController::class, 'publishResults'])->name('exams.results.publish');

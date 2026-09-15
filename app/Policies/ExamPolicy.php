@@ -20,7 +20,21 @@ class ExamPolicy
 
     public function view(User $user, Exam $exam): bool
     {
+        if ($user->hasRole('guru')) {
+            return $this->isTeacherForExam($user, $exam);
+        }
         return $this->viewAny($user);
+    }
+
+    private function isTeacherForExam(User $user, Exam $exam): bool
+    {
+        if ($exam->created_by === $user->id) {
+            return true;
+        }
+        if ($user->teacher) {
+            return $user->teacher->subjects()->where('subjects.id', $exam->subject_id)->exists();
+        }
+        return false;
     }
 
     public function create(User $user): bool
@@ -35,7 +49,7 @@ class ExamPolicy
         }
 
         if ($user->hasRole('guru')) {
-            return $exam->created_by === $user->id;
+            return $this->isTeacherForExam($user, $exam);
         }
 
         return true;
@@ -48,7 +62,7 @@ class ExamPolicy
         }
 
         if ($user->hasRole('guru')) {
-            return $exam->created_by === $user->id;
+            return $this->isTeacherForExam($user, $exam);
         }
 
         return true;
@@ -71,7 +85,7 @@ class ExamPolicy
         }
 
         if ($user->hasRole('guru')) {
-            return $exam->created_by === $user->id;
+            return $this->isTeacherForExam($user, $exam);
         }
 
         return true;
@@ -82,7 +96,7 @@ class ExamPolicy
         // Require a baseline permission for viewing results (or reuse exams.monitor/view)
         // For MVP, we can reuse `exams.monitor` or check role + ownership.
         if ($user->hasRole('guru')) {
-            return $exam->created_by === $user->id;
+            return $this->isTeacherForExam($user, $exam);
         }
 
         // Super Admin or Kurikulum (assuming they have 'exams.monitor' or similar)
@@ -111,7 +125,7 @@ class ExamPolicy
         }
 
         if ($user->hasRole('guru')) {
-            return $exam->created_by === $user->id;
+            return $this->isTeacherForExam($user, $exam);
         }
 
         return false;

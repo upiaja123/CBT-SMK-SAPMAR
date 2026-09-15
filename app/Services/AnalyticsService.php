@@ -22,19 +22,19 @@ class AnalyticsService
                 SUM(CASE WHEN status = "SUBMITTED" THEN 1 ELSE 0 END) as submitted,
                 SUM(CASE WHEN status = "AUTO_SUBMITTED" THEN 1 ELSE 0 END) as auto_submitted,
                 SUM(CASE WHEN grading_status = "WAITING_MANUAL" THEN 1 ELSE 0 END) as waiting_manual,
-                SUM(CASE WHEN grading_status = "FINAL" AND status IN ("SUBMITTED", "AUTO_SUBMITTED") THEN 1 ELSE 0 END) as final_count,
+                SUM(CASE WHEN grading_status IN ("FINAL", "AUTO_GRADED", "GRADED") AND status IN ("SUBMITTED", "AUTO_SUBMITTED") THEN 1 ELSE 0 END) as final_count,
                 
                 -- Score metrics only for FINAL status and valid submit status
-                AVG(CASE WHEN grading_status = "FINAL" AND status IN ("SUBMITTED", "AUTO_SUBMITTED") AND max_total_score > 0 THEN (total_score / max_total_score * 100) ELSE NULL END) as avg_score,
-                MAX(CASE WHEN grading_status = "FINAL" AND status IN ("SUBMITTED", "AUTO_SUBMITTED") AND max_total_score > 0 THEN (total_score / max_total_score * 100) ELSE NULL END) as highest_score,
-                MIN(CASE WHEN grading_status = "FINAL" AND status IN ("SUBMITTED", "AUTO_SUBMITTED") AND max_total_score > 0 THEN (total_score / max_total_score * 100) ELSE NULL END) as lowest_score
+                AVG(CASE WHEN grading_status IN ("FINAL", "AUTO_GRADED", "GRADED") AND status IN ("SUBMITTED", "AUTO_SUBMITTED") AND max_total_score > 0 THEN (total_score / max_total_score * 100) ELSE NULL END) as avg_score,
+                MAX(CASE WHEN grading_status IN ("FINAL", "AUTO_GRADED", "GRADED") AND status IN ("SUBMITTED", "AUTO_SUBMITTED") AND max_total_score > 0 THEN (total_score / max_total_score * 100) ELSE NULL END) as highest_score,
+                MIN(CASE WHEN grading_status IN ("FINAL", "AUTO_GRADED", "GRADED") AND status IN ("SUBMITTED", "AUTO_SUBMITTED") AND max_total_score > 0 THEN (total_score / max_total_score * 100) ELSE NULL END) as lowest_score
             ')
             ->first();
 
         // Calculate median for FINAL status attempts
         $finalScores = ExamAttempt::where('exam_id', $exam->id)
             ->whereIn('status', ['SUBMITTED', 'AUTO_SUBMITTED'])
-            ->where('grading_status', 'FINAL')
+            ->whereIn('grading_status', ['FINAL', 'AUTO_GRADED', 'GRADED'])
             ->where('max_total_score', '>', 0)
             ->get()
             ->map(function ($attempt) {
@@ -92,11 +92,11 @@ class AnalyticsService
             ->selectRaw('COUNT(DISTINCT exam_attempts.id) as attempt_count')
             ->selectRaw('COUNT(DISTINCT students.id) as student_count')
             ->selectRaw('SUM(CASE WHEN exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") THEN 1 ELSE 0 END) as completed_count')
-            ->selectRaw('AVG(CASE WHEN exam_attempts.grading_status = "FINAL" AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") AND exam_attempts.max_total_score > 0 THEN (exam_attempts.total_score / exam_attempts.max_total_score * 100) ELSE NULL END) as avg_score')
-            ->selectRaw('MAX(CASE WHEN exam_attempts.grading_status = "FINAL" AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") AND exam_attempts.max_total_score > 0 THEN (exam_attempts.total_score / exam_attempts.max_total_score * 100) ELSE NULL END) as highest_score')
-            ->selectRaw('MIN(CASE WHEN exam_attempts.grading_status = "FINAL" AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") AND exam_attempts.max_total_score > 0 THEN (exam_attempts.total_score / exam_attempts.max_total_score * 100) ELSE NULL END) as lowest_score')
-            ->selectRaw('SUM(CASE WHEN exam_attempts.grading_status = "FINAL" AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") AND exam_attempts.max_total_score > 0 AND (exam_attempts.total_score / exam_attempts.max_total_score * 100) >= 60 THEN 1 ELSE 0 END) as pass_count')
-            ->selectRaw('SUM(CASE WHEN exam_attempts.grading_status = "FINAL" AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") THEN 1 ELSE 0 END) as final_count');
+            ->selectRaw('AVG(CASE WHEN exam_attempts.grading_status IN ("FINAL", "AUTO_GRADED", "GRADED") AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") AND exam_attempts.max_total_score > 0 THEN (exam_attempts.total_score / exam_attempts.max_total_score * 100) ELSE NULL END) as avg_score')
+            ->selectRaw('MAX(CASE WHEN exam_attempts.grading_status IN ("FINAL", "AUTO_GRADED", "GRADED") AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") AND exam_attempts.max_total_score > 0 THEN (exam_attempts.total_score / exam_attempts.max_total_score * 100) ELSE NULL END) as highest_score')
+            ->selectRaw('MIN(CASE WHEN exam_attempts.grading_status IN ("FINAL", "AUTO_GRADED", "GRADED") AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") AND exam_attempts.max_total_score > 0 THEN (exam_attempts.total_score / exam_attempts.max_total_score * 100) ELSE NULL END) as lowest_score')
+            ->selectRaw('SUM(CASE WHEN exam_attempts.grading_status IN ("FINAL", "AUTO_GRADED", "GRADED") AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") AND exam_attempts.max_total_score > 0 AND (exam_attempts.total_score / exam_attempts.max_total_score * 100) >= 60 THEN 1 ELSE 0 END) as pass_count')
+            ->selectRaw('SUM(CASE WHEN exam_attempts.grading_status IN ("FINAL", "AUTO_GRADED", "GRADED") AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") THEN 1 ELSE 0 END) as final_count');
 
         if (!empty($filters['exam_id'])) {
             $query->where('exam_attempts.exam_id', $filters['exam_id']);
@@ -132,9 +132,9 @@ class AnalyticsService
             ->select('subjects.id', 'subjects.name', 'subjects.code')
             ->selectRaw('COUNT(DISTINCT exams.id) as exam_count')
             ->selectRaw('COUNT(DISTINCT exam_attempts.student_id) as participant_count')
-            ->selectRaw('AVG(CASE WHEN exam_attempts.grading_status = "FINAL" AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") AND exam_attempts.max_total_score > 0 THEN (exam_attempts.total_score / exam_attempts.max_total_score * 100) ELSE NULL END) as avg_score')
-            ->selectRaw('SUM(CASE WHEN exam_attempts.grading_status = "FINAL" AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") AND exam_attempts.max_total_score > 0 AND (exam_attempts.total_score / exam_attempts.max_total_score * 100) >= 60 THEN 1 ELSE 0 END) as pass_count')
-            ->selectRaw('SUM(CASE WHEN exam_attempts.grading_status = "FINAL" AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") THEN 1 ELSE 0 END) as final_count');
+            ->selectRaw('AVG(CASE WHEN exam_attempts.grading_status IN ("FINAL", "AUTO_GRADED", "GRADED") AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") AND exam_attempts.max_total_score > 0 THEN (exam_attempts.total_score / exam_attempts.max_total_score * 100) ELSE NULL END) as avg_score')
+            ->selectRaw('SUM(CASE WHEN exam_attempts.grading_status IN ("FINAL", "AUTO_GRADED", "GRADED") AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") AND exam_attempts.max_total_score > 0 AND (exam_attempts.total_score / exam_attempts.max_total_score * 100) >= 60 THEN 1 ELSE 0 END) as pass_count')
+            ->selectRaw('SUM(CASE WHEN exam_attempts.grading_status IN ("FINAL", "AUTO_GRADED", "GRADED") AND exam_attempts.status IN ("SUBMITTED", "AUTO_SUBMITTED") THEN 1 ELSE 0 END) as final_count');
 
         if (!empty($filters['academic_year_id'])) {
             $query->where('subjects.academic_year_id', $filters['academic_year_id']);

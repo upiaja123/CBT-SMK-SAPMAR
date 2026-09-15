@@ -51,8 +51,11 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <h2 class="text-2xl font-bold text-gray-900 mb-2" x-text="status === 'SUBMITTED' || status === 'AUTO_SUBMITTED' ? 'Ujian Telah Dikumpulkan' : 'Waktu Habis'">Waktu Habis</h2>
-            <p class="text-gray-600" x-text="status === 'SUBMITTED' ? 'Terima kasih, ujian Anda telah berhasil dikumpulkan.' : (status === 'AUTO_SUBMITTED' ? 'Waktu habis dan ujian Anda telah dikumpulkan otomatis.' : 'Sesi ujian Anda telah berakhir.')">Sesi ujian Anda telah berakhir.</p>
-            <a href="/student/dashboard" class="mt-6 inline-block px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">Kembali ke Dashboard</a>
+            <p class="text-gray-600" x-text="status === 'SUBMITTED' ? 'Terima kasih, ujian Anda telah berhasil dikumpulkan dan sudah diverifikasi.' : (status === 'AUTO_SUBMITTED' ? 'Waktu habis dan ujian Anda telah dikumpulkan otomatis.' : 'Sesi ujian Anda telah berakhir.')">Sesi ujian Anda telah berakhir.</p>
+            <a href="{{ route('dashboard') }}" class="mt-8 inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-md w-full sm:w-auto">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Kembali ke Halaman Utama
+            </a>
         </div>
 
         <div x-show="!isLoading && !isEnded && is_locked" class="w-full bg-white p-8 rounded-xl shadow-sm border border-red-200 text-center" style="display: none;" x-cloak>
@@ -294,16 +297,39 @@
                         Terdapat jawaban yang sedang disimpan. Harap tunggu hingga sinkronisasi selesai sebelum mengumpulkan.
                     </div>
                 </template>
+
+                <div class="mt-5 p-4 border border-blue-100 bg-blue-50/50 rounded-xl">
+                    <label class="flex items-start cursor-pointer">
+                        <div class="flex items-center h-5 mt-0.5">
+                            <input type="checkbox" x-model="isVerified" class="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 cursor-pointer transition">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <span class="font-bold text-gray-900 block mb-1">Verifikasi Jawaban</span>
+                            <span class="text-gray-600">Saya yakin telah memeriksa kembali semua jawaban saya dan siap untuk mengumpulkan ujian secara permanen.</span>
+                        </div>
+                    </label>
+                </div>
             </div>
-            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
-                <button @click="showSubmitModal = false" :disabled="isSubmitting" class="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
-                <button @click="submitExam()" :disabled="isSubmitting || syncQueue.length > 0" class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition flex items-center disabled:opacity-50">
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-2 sm:space-x-3">
+                <button @click="showSubmitModal = false; isVerified = false;" :disabled="isSubmitting" class="w-full sm:w-auto px-4 py-2.5 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 font-medium">Batal & Periksa Lagi</button>
+                <button @click="submitExam()" :disabled="isSubmitting || syncQueue.length > 0 || !isVerified" class="w-full sm:w-auto px-4 py-2.5 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed font-bold">
                     <template x-if="isSubmitting">
                         <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     </template>
                     Kumpulkan Ujian
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Violation Modal -->
+    <div x-show="showViolationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80" style="display: none;" x-cloak>
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform transition-all border-t-4 border-red-600 p-6 text-center">
+            <svg class="mx-auto h-16 w-16 text-red-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">PERINGATAN KECURANGAN!</h3>
+            <p class="text-gray-700 font-medium mb-2" x-text="violationMessage"></p>
+            <p class="text-sm text-red-600 font-bold mb-6">Sistem keamanan mendeteksi aktivitas mencurigakan. Jika Anda mengulangi pelanggaran ini berkali-kali, ujian Anda bisa dihentikan paksa!</p>
+            <button @click="showViolationModal = false" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition">Saya Mengerti & Tidak Akan Mengulangi</button>
         </div>
     </div>
 
@@ -318,6 +344,10 @@
                 is_locked: false,
                 status: 'IN_PROGRESS',
                 showSubmitModal: false,
+                isVerified: false,
+                showViolationModal: false,
+                violationCount: 0,
+                violationMessage: '',
                 isSubmitting: false,
                 questions: [],
                 currentQuestionIndex: 0,
@@ -345,6 +375,12 @@
                         // I'll grab it from the document, or fetch one if missing.
                     }
 
+                    // Prevent Back Navigation
+                    history.pushState(null, null, location.href);
+                    window.addEventListener('popstate', function () {
+                        history.go(1);
+                    });
+
                     window.addEventListener('online', () => {
                         this.isOnline = true;
                         this.flushSyncQueue();
@@ -358,15 +394,19 @@
                     
                     // Integrity Events
                     document.addEventListener('visibilitychange', () => {
-                        if (document.hidden) {
+                        if (document.hidden && this.status === 'IN_PROGRESS' && !this.is_locked && !this.showSubmitModal) {
                             this.sendIntegrityEvent('TAB_HIDDEN', { detail: 'Document hidden' });
+                            this.registerViolation('Anda terdeteksi berpindah ke aplikasi atau Tab lain.');
                         } else {
                             this.sendIntegrityEvent('TAB_VISIBLE', { detail: 'Document visible' });
                         }
                     });
 
                     window.addEventListener('blur', () => {
-                        this.sendIntegrityEvent('WINDOW_BLUR', { detail: 'Window lost focus' });
+                        if (this.status === 'IN_PROGRESS' && !this.is_locked && !this.showSubmitModal) {
+                            this.sendIntegrityEvent('WINDOW_BLUR', { detail: 'Window lost focus' });
+                            this.registerViolation('Anda terdeteksi keluar dari layar ujian.');
+                        }
                     });
                     
                     window.addEventListener('focus', () => {
@@ -484,6 +524,18 @@
 
                 get currentQuestion() {
                     return this.questions[this.currentQuestionIndex] || null;
+                },
+
+                registerViolation(msg) {
+                    this.violationCount++;
+                    this.violationMessage = msg + ` (Peringatan ke-${this.violationCount})`;
+                    this.showViolationModal = true;
+                    
+                    // Force submit on 5 violations
+                    if (this.violationCount >= 5) {
+                        alert("Batas pelanggaran maksimum tercapai. Ujian Anda dihentikan secara paksa.");
+                        this.submitExam();
+                    }
                 },
 
                 async sendHeartbeat() {

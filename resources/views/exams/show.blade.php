@@ -38,7 +38,7 @@
                         </button>
                     @endcan
                 @endif
-                @if(!in_array($exam->status, ['DRAFT']))
+                @if(!in_array($exam->status, ['DRAFT']) && auth()->user()->hasAnyRole(['super_admin', 'kurikulum']))
                     <div class="inline-flex rounded-md shadow-sm" role="group">
                         <a href="{{ route('prints.attendance', $exam) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-l-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
@@ -53,21 +53,7 @@
                         Berita Acara
                     </a>
                 @endif
-                <div class="inline-flex rounded-md shadow-sm ml-2" role="group">
-                    @can('viewResults', $exam)
-                        <a href="{{ route('exams.results.index', $exam) }}" class="inline-flex items-center px-4 py-2 bg-indigo-50 border border-indigo-300 rounded-l-md font-semibold text-xs text-indigo-700 uppercase tracking-widest hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                            Hasil Ujian
-                        </a>
-                        <a href="{{ route('analytics.exam', $exam) }}" class="inline-flex items-center px-4 py-2 bg-indigo-50 border-t border-b border-indigo-300 font-semibold text-xs text-indigo-700 uppercase tracking-widest hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                            Analitik
-                        </a>
-                    @endcan
-                    @can('grade', $exam)
-                        <a href="{{ route('exams.grading.index', $exam) }}" class="inline-flex items-center px-4 py-2 bg-purple-50 border {{ auth()->user()->can('viewResults', $exam) ? 'border-l-0 rounded-r-md' : 'rounded-md' }} border-purple-300 font-semibold text-xs text-purple-700 uppercase tracking-widest hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                            Koreksi Manual
-                        </a>
-                    @endcan
-                </div>
+
                 <span class="px-3 py-1 text-xs font-bold leading-5 rounded-full 
                     {{ $exam->dynamic_status === 'ONGOING' || $exam->dynamic_status === 'OPEN' ? 'bg-green-100 text-green-800' : '' }}
                     {{ $exam->dynamic_status === 'DRAFT' ? 'bg-gray-100 text-gray-800' : '' }}

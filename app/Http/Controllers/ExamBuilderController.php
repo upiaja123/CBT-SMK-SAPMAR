@@ -12,10 +12,25 @@ use Illuminate\Support\Str;
 
 class ExamBuilderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Exam::class);
-        $exams = Exam::with(['subject', 'creator'])->latest()->paginate(15);
+        $user = $request->user();
+        
+        $query = Exam::with(['subject', 'creator'])->latest();
+        
+        if ($user->hasRole('guru')) {
+            $query->where(function ($q) use ($user) {
+                $q->where('created_by', $user->id);
+                if ($user->teacher) {
+                    $q->orWhereHas('subject.teachers', function ($subQ) use ($user) {
+                        $subQ->where('teachers.id', $user->teacher->id);
+                    });
+                }
+            });
+        }
+        
+        $exams = $query->paginate(15);
         return view('exams.index', compact('exams'));
     }
 

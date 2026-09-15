@@ -17,15 +17,16 @@ class ExamAttemptController extends Controller
     {
         $user = $request->user();
         if (!$user->hasRole('siswa') || !$user->student) {
-            abort(403, 'Hanya siswa yang dapat memulai ujian.');
+            return back()->with('error', 'Hanya siswa yang dapat memulai ujian.');
         }
 
-        $attempt = $this->attemptService->startAttempt($exam, $user->student);
+        try {
+            $attempt = $this->attemptService->startAttempt($exam, $user->student);
 
-        return response()->json([
-            'message' => 'Ujian berhasil dimulai',
-            'attempt_id' => $attempt->id
-        ], 201);
+            return redirect()->route('exams.attempts.session', ['exam' => $exam->id, 'attempt' => $attempt->id]);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            return back()->with('error', 'tidak bisa masuk silahkan hubungi admin');
+        }
     }
 
     public function show(Request $request, \App\Models\Exam $exam, \App\Models\ExamAttempt $attempt)
@@ -97,11 +98,16 @@ class ExamAttemptController extends Controller
         }
 
         $serverNow = now();
-        
+
         // Proactive finalization on view if past deadline
         if ($attempt->status === 'IN_PROGRESS' && $attempt->deadline_at && $serverNow->gt($attempt->deadline_at)) {
             $this->attemptService->finalizeAttempt($attempt, true);
             $attempt->refresh();
+        }
+
+        // Prevent accessing session if already finalized/submitted
+        if (in_array($attempt->status, ['SUBMITTED', 'AUTO_SUBMITTED', 'FINALIZED'])) {
+            return redirect()->route('dashboard')->with('success', 'Ujian telah selesai dikerjakan.');
         }
 
         $attempt->load('exam');
@@ -169,7 +175,11 @@ class ExamAttemptController extends Controller
             abort(403);
         }
 
-        $attempt->load('exam');
+        $attempt->load([
+            'exam', 
+            'questionSnapshots.optionSnapshots', 
+            'questionSnapshots.participantAnswer'
+        ]);
 
         // Audit logging if the student is viewing it
         if ($request->user()->hasRole('siswa')) {
@@ -204,9 +214,9 @@ class ExamAttemptController extends Controller
         }
 
         $previousStatus = $attempt->connection_status;
-        
+
         $attempt->update(['last_seen_at' => now()]);
-        
+
         if ($previousStatus !== 'ONLINE') {
             event(new \App\Events\ExamAttemptPresenceUpdated($attempt));
         }
