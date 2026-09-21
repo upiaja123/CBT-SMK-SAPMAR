@@ -1,4 +1,8 @@
 <?php
+Route::get('/buat-storage', function () {
+    Artisan::call('storage:link');
+    return "Folder gambar berhasil dihubungkan!";
+});
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
