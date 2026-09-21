@@ -1,4 +1,6 @@
 <?php
+use Illuminate\Support\Facades\Artisan;
+
 Route::get('/buat-storage', function () {
     Artisan::call('storage:link');
     return "Folder gambar berhasil dihubungkan!";
