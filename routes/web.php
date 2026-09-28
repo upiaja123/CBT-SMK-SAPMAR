@@ -32,6 +32,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Users (Teachers & Students) Routes
     Route::prefix('users')->name('users.')->group(function () {
+        Route::get('verifications', [\App\Http\Controllers\UserVerificationController::class, 'index'])->name('verifications.index');
+        Route::put('verifications/{user}', [\App\Http\Controllers\UserVerificationController::class, 'update'])->name('verifications.update');
+        Route::delete('verifications/{user}', [\App\Http\Controllers\UserVerificationController::class, 'destroy'])->name('verifications.destroy');
+
         Route::resource('staff', \App\Http\Controllers\User\StaffController::class)->except(['create', 'edit', 'show']);
         Route::resource('teachers', \App\Http\Controllers\User\TeacherController::class)->except(['create', 'edit', 'show']);
 

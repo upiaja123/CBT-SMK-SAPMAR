@@ -36,15 +36,21 @@ class SocialAuthController extends Controller
             ->first();
 
         if ($user) {
-            // Simpan google_id jika user mendaftar via email sebelumnya
-            if (!$user->google_id) {
-                $user->update(['google_id' => $googleUser->getId()]);
-            }
-
             // Cek status akun
             if (!$user->isActive()) {
                 return redirect()->route('login')
                     ->with('error', 'Akun Anda belum aktif. Hubungi administrator.');
+            }
+
+            // Cek Maintenance Mode
+            if (app()->isDownForMaintenance() && !$user->hasRole('super_admin')) {
+                return redirect()->route('login')
+                    ->with('error', 'Sistem sedang dalam mode perbaikan (Maintenance). Hanya administrator yang dapat masuk saat ini.');
+            }
+
+            // Simpan google_id jika user mendaftar via email sebelumnya
+            if (!$user->google_id) {
+                $user->update(['google_id' => $googleUser->getId()]);
             }
 
             Auth::login($user, true);
@@ -54,6 +60,12 @@ class SocialAuthController extends Controller
             ]);
 
             return redirect()->intended(route('dashboard'));
+        }
+
+        // Cek Maintenance Mode untuk pendaftar baru
+        if (app()->isDownForMaintenance()) {
+            return redirect()->route('login')
+                ->with('error', 'Sistem sedang dalam mode perbaikan. Pendaftaran akun baru ditutup sementara.');
         }
 
         // Buat akun baru dari data Google (default: siswa, status: inactive)
@@ -69,8 +81,13 @@ class SocialAuthController extends Controller
             'password'  => \Illuminate\Support\Facades\Hash::make(Str::random(24)),
             'status'    => 'inactive',
         ]);
-
         $newUser->assignRole('siswa');
+
+        \App\Models\Student::create([
+            'user_id' => $newUser->id,
+            'school_class_id' => null,
+            'status' => 'inactive',
+        ]);
 
         return redirect()->route('login')->with('status',
             "Akun Google Anda ({$googleEmail}) berhasil terdaftar! Silakan tunggu aktivasi dari administrator."

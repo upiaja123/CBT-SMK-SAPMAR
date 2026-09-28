@@ -27,10 +27,22 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+
+        // Check if system is in maintenance mode and user is not super_admin
+        if (app()->isDownForMaintenance() && !$user->hasRole('super_admin')) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            return redirect()->route('login')->withErrors([
+                'email' => 'Sistem sedang dalam mode perbaikan (Maintenance). Hanya administrator yang dapat masuk saat ini.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         // Record login audit & update last_login metadata
-        $user = Auth::user();
         $user->update([
             'last_login_at' => now(),
             'last_login_ip' => $request->ip(),
