@@ -66,7 +66,7 @@ class SocialAuthController extends Controller
             'username'  => Str::slug($googleName) . '_' . Str::random(5),
             'google_id' => $googleUser->getId(),
             'avatar'    => $googleUser->getAvatar(),
-            'password'  => null,
+            'password'  => \Illuminate\Support\Facades\Hash::make(Str::random(24)),
             'status'    => 'inactive',
         ]);
 
