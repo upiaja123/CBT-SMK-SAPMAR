@@ -23,7 +23,14 @@ class UserVerificationController extends Controller
             ->latest()
             ->paginate(15);
 
-        $roles = Role::all();
+        // Filter roles based on current user's permission
+        if (auth()->user()->hasRole('super_admin')) {
+            $roles = Role::all();
+        } else {
+            // Kurikulum/Staff only can verify as siswa, guru, proktor, etc (excluding super_admin and kurikulum)
+            $roles = Role::whereNotIn('name', ['super_admin', 'kurikulum'])->get();
+        }
+
         $classes = SchoolClass::where('is_active', true)->get();
 
         return view('users.verifications.index', compact('pendingUsers', 'roles', 'classes'));
@@ -39,6 +46,11 @@ class UserVerificationController extends Controller
             'nis' => 'nullable|string|max:20',
             'nip' => 'nullable|string|max:30',
         ]);
+
+        // Security Check: Only super_admin can assign super_admin or kurikulum roles
+        if (in_array($validated['role'], ['super_admin', 'kurikulum']) && !auth()->user()->hasRole('super_admin')) {
+            abort(403, 'Anda tidak memiliki hak akses untuk memberikan Role level tinggi ini.');
+        }
 
         DB::transaction(function () use ($user, $validated) {
             $role = $validated['role'];
