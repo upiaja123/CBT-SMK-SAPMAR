@@ -12,16 +12,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind('path.public', function() {
-            // Jika dideploy di Hostinger (cbt-app dan public_html terpisah)
-            $hostingerPath = base_path('../public_html');
-            if (is_dir($hostingerPath)) {
-                return $hostingerPath;
-            }
-            
-            // Jika di local (Laragon)
-            return base_path('public');
-        });
+        //
     }
 
     /**
