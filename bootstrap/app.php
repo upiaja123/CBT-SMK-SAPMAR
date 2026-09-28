@@ -22,8 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->preventRequestsDuringMaintenance(except: [
+            '/',
             'login',
             'logout',
+            'auth/google*',
             'system*',
             'log-viewer*',
         ]);
