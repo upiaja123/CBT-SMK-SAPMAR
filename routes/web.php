@@ -68,6 +68,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('questions/{question}/edit', [\App\Http\Controllers\QuestionController::class, 'edit'])->name('questions.edit');
     Route::put('questions/{question}', [\App\Http\Controllers\QuestionController::class, 'update'])->name('questions.update');
     Route::delete('questions/{question}', [\App\Http\Controllers\QuestionController::class, 'destroy'])->name('questions.destroy');
+    Route::delete('questions/{question}/force', [\App\Http\Controllers\QuestionController::class, 'forceDestroy'])->name('questions.force_destroy');
     Route::post('questions/{question}/publish', [\App\Http\Controllers\QuestionController::class, 'publish'])->name('questions.publish');
     Route::post('questions/{question}/draft', [\App\Http\Controllers\QuestionController::class, 'draft'])->name('questions.draft');
     Route::get('questions/{question}/preview', [\App\Http\Controllers\QuestionController::class, 'preview'])->name('questions.preview');

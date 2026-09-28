@@ -237,4 +237,28 @@ class QuestionController extends Controller
 
         return back()->with('success', 'Soal berhasil diarsipkan.');
     }
+
+    public function forceDestroy(Request $request, Question $question)
+    {
+        $this->authorize('forceDelete', $question);
+
+        DB::transaction(function () use ($question) {
+            // Unbind media first
+            foreach ($question->versions as $version) {
+                \App\Models\Media::where('mediable_type', QuestionVersion::class)
+                    ->where('mediable_id', $version->id)
+                    ->update(['mediable_id' => null, 'mediable_type' => null]);
+            }
+            
+            $question->forceDelete();
+        });
+
+        AuditLog::record('question.force_delete', $question, $question->toArray(), null, 'success', 'Soal dihapus permanen oleh Super Admin');
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Soal berhasil dihapus permanen.']);
+        }
+
+        return back()->with('success', 'Soal berhasil dihapus permanen.');
+    }
 }

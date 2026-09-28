@@ -82,4 +82,9 @@ class QuestionPolicy
 
         return true;
     }
+
+    public function forceDelete(User $user, Question $question): bool
+    {
+        return $user->hasRole('super_admin');
+    }
 }
