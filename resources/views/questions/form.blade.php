@@ -61,9 +61,40 @@
                         <!-- Question Text -->
                         <div>
                             <x-input-label for="content" :value="__('Pertanyaan')" class="text-base" />
-                            <p class="text-xs text-gray-500 mb-2">Gunakan editor ini untuk mengetik teks soal.</p>
+                            <p class="text-xs text-gray-500 mb-2">Gunakan editor ini untuk mengetik teks soal. Klik tombol <strong>∑ Rumus</strong> untuk menyisipkan formula matematika.</p>
                             
-                            <textarea x-model="form.content" rows="6" class="border-gray-300 focus:border-sapta-500 focus:ring-sapta-500 rounded-md shadow-sm block w-full"></textarea>
+                            <!-- Math Toolbar for Question -->
+                            <div class="flex flex-wrap gap-1 mb-2 p-2 bg-blue-50 border border-blue-200 rounded-md" id="math-toolbar-question">
+                                <span class="text-xs text-blue-700 font-medium self-center mr-1">∑ Sisipkan:</span>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\frac{a}{b}" title="Pecahan">a/b</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="x^{2}" title="Pangkat 2">x²</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="x^{n}" title="Pangkat n">xⁿ</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\sqrt{x}" title="Akar">√x</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\sqrt[n]{x}" title="Akar ke-n">ⁿ√x</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\sum_{i=1}^{n}" title="Sigma">Σ</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\int_{a}^{b}" title="Integral">∫</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\lim_{x \to \infty}" title="Limit">lim</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\pi" title="Pi">π</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\alpha" title="Alpha">α</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\beta" title="Beta">β</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\theta" title="Theta">θ</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\infty" title="Tak Hingga">∞</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\leq" title="Kurang dari sama dengan">≤</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\geq" title="Lebih dari sama dengan">≥</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\neq" title="Tidak sama dengan">≠</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\times" title="Kali">×</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\div" title="Bagi">÷</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\pm" title="Plus Minus">±</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\sin(x)" title="Sinus">sin</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\cos(x)" title="Cosinus">cos</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\tan(x)" title="Tangen">tan</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\log_{10}(x)" title="Log">log</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\ln(x)" title="Ln">ln</button>
+                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\begin{pmatrix} a & b \\\\ c & d \end{pmatrix}" title="Matriks 2x2">[ ]</button>
+                                <span class="text-xs text-blue-500 self-center ml-1">Tulis formula di dalam $...$</span>
+                            </div>
+
+                            <textarea id="question-content" x-model="form.content" rows="6" class="border-gray-300 focus:border-sapta-500 focus:ring-sapta-500 rounded-md shadow-sm block w-full" placeholder="Contoh: Tentukan hasil dari $\frac{2}{3} + \frac{1}{4}$ = ..."></textarea>
                             <p x-show="errors.content" class="text-red-500 text-xs mt-1" x-text="errors.content"></p>
                             
                             <!-- Media Uploader -->
@@ -141,8 +172,20 @@
                                         </div>
 
                                         <div class="flex-1">
+                                            <!-- Math Toolbar Mini untuk opsi jawaban -->
+                                            <div class="flex gap-1 mb-1 flex-wrap">
+                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\frac{a}{b}">a/b</button>
+                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="x^{2}">x²</button>
+                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\sqrt{x}">√x</button>
+                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\pi">π</button>
+                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\infty">∞</button>
+                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\times">×</button>
+                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\pm">±</button>
+                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\leq">≤</button>
+                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\geq">≥</button>
+                                            </div>
                                             <!-- Matching requires two parts: we simulate it by parsing or dual fields. For simplicity, just one field here for UI -->
-                                            <textarea x-model="option.content" rows="2" class="border-gray-300 focus:border-sapta-500 focus:ring-sapta-500 rounded-md shadow-sm block w-full text-sm" placeholder="Teks opsi..."></textarea>
+                                            <textarea :id="'option-content-' + index" x-model="option.content" rows="2" class="border-gray-300 focus:border-sapta-500 focus:ring-sapta-500 rounded-md shadow-sm block w-full text-sm" placeholder="Teks opsi... (gunakan $rumus$ untuk formula, cth: $x^2 + 1$)"></textarea>
                                         </div>
 
                                         <!-- Weight -->
@@ -539,4 +582,60 @@
         }
     </script>
     @endpush
+
+@push('scripts')
+<script>
+// ─── Math Toolbar Handler ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Fungsi untuk menyisipkan teks di posisi kursor pada textarea
+    function insertAtCursor(textarea, text) {
+        if (!textarea) return;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const before = textarea.value.substring(0, start);
+        const after = textarea.value.substring(end);
+        const insert = '$' + text + '$';
+        textarea.value = before + insert + after;
+        // Trigger Alpine.js x-model update
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        // Kembalikan fokus dan posisi kursor
+        textarea.focus();
+        const newPos = start + insert.length;
+        textarea.setSelectionRange(newPos, newPos);
+    }
+
+    // Handler untuk tombol toolbar pertanyaan utama
+    document.addEventListener('click', function (e) {
+        // Tombol di toolbar soal
+        if (e.target.classList.contains('math-btn')) {
+            e.preventDefault();
+            const targetId = e.target.getAttribute('data-target');
+            const formula = e.target.getAttribute('data-formula');
+            const textarea = document.getElementById(targetId);
+            insertAtCursor(textarea, formula);
+        }
+
+        // Tombol di toolbar opsi jawaban (menggunakan data-target dinamis dari Alpine)
+        if (e.target.classList.contains('math-btn-opt')) {
+            e.preventDefault();
+            const targetId = e.target.getAttribute('data-target');
+            const formula = e.target.getAttribute('data-formula');
+            // Cari textarea berdasarkan id yang di-bind oleh Alpine
+            const textarea = document.getElementById(targetId);
+            if (textarea) {
+                insertAtCursor(textarea, formula);
+            } else {
+                // Fallback: cari textarea terdekat
+                const container = e.target.closest('.flex-1');
+                if (container) {
+                    const ta = container.querySelector('textarea');
+                    if (ta) insertAtCursor(ta, formula);
+                }
+            }
+        }
+    });
+});
+</script>
+@endpush
 </x-app-layout>

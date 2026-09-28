@@ -163,4 +163,33 @@ class QuestionBankController extends Controller
 
         return redirect()->route('question_banks.index')->with('success', 'Bank soal berhasil diarsipkan.');
     }
+
+    public function forceDestroy(QuestionBank $questionBank): RedirectResponse
+    {
+        $this->authorize('forceDelete', $questionBank);
+
+        $bankName = $questionBank->name;
+
+        // Hapus semua soal & media terkait terlebih dahulu
+        foreach ($questionBank->questions as $question) {
+            foreach ($question->versions as $version) {
+                $version->options()->delete();
+                $version->delete();
+            }
+            $question->forceDelete();
+        }
+
+        $questionBank->forceDelete();
+
+        AuditLog::record(
+            'question_bank.force_delete',
+            null,
+            ['name' => $bankName],
+            null,
+            'success',
+            'Bank soal dihapus permanen oleh Super Admin'
+        );
+
+        return redirect()->route('question_banks.index')->with('success', "Bank soal \"{$bankName}\" berhasil dihapus permanen.");
+    }
 }

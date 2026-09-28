@@ -390,4 +390,34 @@ class ExamBuilderController extends Controller
 
         return back()->with('success', 'Peserta berhasil dihapus.');
     }
+
+    public function forceDestroy(Exam $exam)
+    {
+        $this->authorize('forceDelete', $exam);
+
+        $examTitle = $exam->title;
+
+        DB::transaction(function () use ($exam) {
+            // Hapus semua data terkait ujian
+            $exam->participants()->delete();
+            $exam->questions()->delete();
+            $exam->attempts()->each(function ($attempt) {
+                $attempt->answers()->delete();
+                $attempt->integrityEvents()->delete();
+                $attempt->delete();
+            });
+            $exam->forceDelete();
+        });
+
+        AuditLog::record(
+            'exam.force_delete',
+            null,
+            ['title' => $examTitle],
+            null,
+            'success',
+            'Ujian dihapus permanen oleh Super Admin'
+        );
+
+        return redirect()->route('exams.index')->with('success', "Ujian \"{$examTitle}\" berhasil dihapus permanen.");
+    }
 }

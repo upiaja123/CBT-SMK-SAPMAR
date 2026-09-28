@@ -25,13 +25,13 @@ class RolePermissionSeeder extends Seeder
             'academic_years.manage', 'students.manage', 'teachers.manage', 'users.manage',
             // Question banks
             'question_banks.view', 'question_banks.create',
-            'question_banks.update', 'question_banks.archive',
+            'question_banks.update', 'question_banks.archive', 'question_banks.delete',
             // Questions
             'questions.create', 'questions.update', 'questions.delete',
             'questions.publish', 'questions.review',
             // Exams
             'exams.create', 'exams.update', 'exams.schedule',
-            'exams.publish', 'exams.archive',
+            'exams.publish', 'exams.archive', 'exams.delete',
             'exams.monitor', 'exams.lock', 'exams.unlock', 'exams.extend_time',
             // Attempts
             'attempts.reset',

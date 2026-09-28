@@ -73,6 +73,13 @@
                                                         @can('update', $exam)
                                                             <a href="{{ route('exams.edit', $exam) }}" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-yellow-500 hover:bg-yellow-600 shadow-sm">Edit</a>
                                                         @endcan
+                                                        @can('forceDelete', $exam)
+                                                        <form action="{{ route('exams.force_destroy', $exam) }}" method="POST" onsubmit="return confirm('⚠️ HAPUS PERMANEN?\n\nUjian \"{{ addslashes($exam->title) }}\" beserta semua data peserta dan jawaban akan dihapus selamanya!\n\nLanjutkan?')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 shadow-sm">Hapus</button>
+                                                        </form>
+                                                        @endcan
                                                     @endif
                                                 </div>
                                             </td>

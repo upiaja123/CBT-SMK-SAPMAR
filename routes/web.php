@@ -60,6 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Phase 1: Question Bank & Exams
     Route::resource('question_banks', \App\Http\Controllers\QuestionBankController::class);
+    Route::delete('question_banks/{question_bank}/force', [\App\Http\Controllers\QuestionBankController::class, 'forceDestroy'])->name('question_banks.force_destroy');
 
     // Questions are nested inside question_banks for creation, but can be updated/deleted independently
     Route::get('question_banks/{question_bank}/questions/create', [\App\Http\Controllers\QuestionController::class, 'create'])->name('questions.create');
@@ -74,6 +75,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Exams
     Route::resource('exams', \App\Http\Controllers\ExamBuilderController::class);
+    Route::delete('exams/{exam}/force', [\App\Http\Controllers\ExamBuilderController::class, 'forceDestroy'])->name('exams.force_destroy');
     Route::put('exams/{exam}/participants', [\App\Http\Controllers\ExamBuilderController::class, 'updateParticipants'])->name('exams.updateParticipants');
     Route::put('exams/{exam}/questions', [\App\Http\Controllers\ExamBuilderController::class, 'updateQuestions'])->name('exams.updateQuestions');
     Route::post('exams/{exam}/publish', [\App\Http\Controllers\ExamBuilderController::class, 'publish'])->name('exams.publish');
@@ -153,3 +155,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+
+// Google OAuth Routes
+Route::get('/auth/google', [\App\Http\Controllers\Auth\SocialAuthController::class, 'redirectToGoogle'])->name('google.login');
+Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\SocialAuthController::class, 'handleGoogleCallback'])->name('google.callback');

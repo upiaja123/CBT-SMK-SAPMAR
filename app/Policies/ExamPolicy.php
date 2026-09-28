@@ -68,6 +68,11 @@ class ExamPolicy
         return true;
     }
 
+    public function forceDelete(User $user, Exam $exam): bool
+    {
+        return $user->hasPermissionTo('exams.delete');
+    }
+
     public function schedule(User $user, Exam $exam): bool
     {
         return $user->hasPermissionTo('exams.schedule');

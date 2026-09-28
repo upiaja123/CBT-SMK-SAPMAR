@@ -56,4 +56,9 @@ class QuestionBankPolicy
 
         return true;
     }
+
+    public function forceDelete(User $user, QuestionBank $questionBank): bool
+    {
+        return $user->hasPermissionTo('question_banks.delete');
+    }
 }

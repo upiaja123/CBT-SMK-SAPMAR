@@ -24,6 +24,7 @@ class User extends Authenticatable
         'status',
         'last_login_at',
         'last_login_ip',
+        'google_id',
     ];
 
     protected $hidden = [
