@@ -50,7 +50,18 @@ class AuthenticatedSessionController extends Controller
 
         \App\Models\AuditLog::record('auth.login', $user);
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $response = redirect()->intended(route('dashboard', absolute: false));
+
+        // If system is down, we know the user is super_admin (others were blocked above).
+        // Attach the bypass cookie so they don't get 503 on other pages.
+        if (app()->isDownForMaintenance()) {
+            $data = app()->maintenanceMode()->data();
+            if (isset($data['secret'])) {
+                $response->withCookie(\Illuminate\Foundation\Http\MaintenanceModeBypassCookie::create($data['secret']));
+            }
+        }
+
+        return $response;
     }
 
     /**

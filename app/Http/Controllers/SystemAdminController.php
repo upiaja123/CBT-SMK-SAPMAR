@@ -83,14 +83,15 @@ class SystemAdminController extends Controller
 
         if (app()->isDownForMaintenance()) {
             Artisan::call('up');
-            // AuditLog::record('system.maintenance.disabled', null, null, null);
             return back()->with('success', 'Sistem kembali online (Maintenance Dinonaktifkan).');
         } else {
+            $secret = 'sapmar-admin-123';
             Artisan::call('down', [
-                '--secret' => 'sapmar-admin-123'
+                '--secret' => $secret
             ]);
-            // AuditLog::record('system.maintenance.enabled', null, null, null);
-            return back()->with('warning', 'Sistem dalam mode pemeliharaan (Maintenance Aktif). Rute khusus sistem dan login tetap dapat diakses.');
+            return back()
+                ->with('warning', 'Sistem dalam mode pemeliharaan (Maintenance Aktif). Rute khusus sistem dan login tetap dapat diakses.')
+                ->withCookie(\Illuminate\Foundation\Http\MaintenanceModeBypassCookie::create($secret));
         }
     }
 

@@ -59,7 +59,17 @@ class SocialAuthController extends Controller
                 'last_login_ip' => request()->ip(),
             ]);
 
-            return redirect()->intended(route('dashboard'));
+            $response = redirect()->intended(route('dashboard'));
+
+            // If system is down, attach bypass cookie so superadmin doesn't get 503
+            if (app()->isDownForMaintenance()) {
+                $data = app()->maintenanceMode()->data();
+                if (isset($data['secret'])) {
+                    $response->withCookie(\Illuminate\Foundation\Http\MaintenanceModeBypassCookie::create($data['secret']));
+                }
+            }
+
+            return $response;
         }
 
         // Cek Maintenance Mode untuk pendaftar baru
