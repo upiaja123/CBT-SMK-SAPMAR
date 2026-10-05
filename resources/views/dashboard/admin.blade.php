@@ -132,63 +132,76 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Chart 1: Pengguna (Doughnut Chart)
-        const ctxUsers = document.getElementById('adminUsersChart');
-        if (ctxUsers) {
-            new Chart(ctxUsers, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Siswa', 'Guru', 'Lainnya'],
-                    datasets: [{
-                        data: [
-                            {{ $stats['total_students'] }}, 
-                            {{ $stats['total_teachers'] }},
-                            {{ max(0, $stats['total_users'] - $stats['total_students'] - $stats['total_teachers']) }}
-                        ],
-                        backgroundColor: [
-                            'rgb(59, 130, 246)',
-                            'rgb(168, 85, 247)',
-                            'rgb(156, 163, 175)'
-                        ],
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
+        try {
+            if (typeof Chart === 'undefined') {
+                console.error("Chart.js gagal dimuat dari internet.");
+                return;
+            }
+
+            // Chart 1: Pengguna (Doughnut Chart)
+            const ctxUsers = document.getElementById('adminUsersChart');
+            if (ctxUsers) {
+                new Chart(ctxUsers, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Siswa', 'Guru', 'Lainnya'],
+                        datasets: [{
+                            data: [
+                                {{ $stats['total_students'] }}, 
+                                {{ $stats['total_teachers'] }},
+                                {{ max(0, $stats['total_users'] - $stats['total_students'] - $stats['total_teachers']) }}
+                            ],
+                            backgroundColor: [
+                                'rgb(59, 130, 246)',
+                                'rgb(168, 85, 247)',
+                                'rgb(156, 163, 175)'
+                            ],
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("Error merender chart pengguna:", e);
         }
 
-        // Chart 2: Aktivitas (Bar Chart)
-        const ctxActivity = document.getElementById('adminActivityChart');
-        if (ctxActivity) {
-            new Chart(ctxActivity, {
-                type: 'bar',
-                data: {
-                    labels: ['Bank Soal', 'Soal', 'Ujian Aktif', 'Sesi Berjalan'],
-                    datasets: [{
-                        label: 'Jumlah',
-                        data: [
-                            {{ $stats['total_question_banks'] }},
-                            {{ $stats['total_questions'] }},
-                            {{ $stats['active_exams'] }},
-                            {{ $stats['ongoing_attempts'] }}
-                        ],
-                        backgroundColor: 'rgba(249, 115, 22, 0.2)',
-                        borderColor: 'rgb(249, 115, 22)',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true }
+        try {
+            // Chart 2: Aktivitas (Bar Chart)
+            const ctxActivity = document.getElementById('adminActivityChart');
+            if (ctxActivity) {
+                new Chart(ctxActivity, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Bank Soal', 'Soal', 'Ujian Aktif', 'Sesi Berjalan'],
+                        datasets: [{
+                            label: 'Jumlah',
+                            data: [
+                                {{ $stats['total_question_banks'] }},
+                                {{ $stats['total_questions'] }},
+                                {{ $stats['active_exams'] }},
+                                {{ $stats['ongoing_attempts'] }}
+                            ],
+                            backgroundColor: 'rgba(249, 115, 22, 0.2)',
+                            borderColor: 'rgb(249, 115, 22)',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
                     }
-                }
-            });
+                });
+            }
+        } catch(e) {
+            console.error("Error merender chart aktivitas:", e);
         }
     });
 </script>
