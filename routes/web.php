@@ -6,19 +6,7 @@ Route::get('/buat-storage', function () {
     return "Folder gambar berhasil dihubungkan!";
 });
 
-Route::get('/perbaikan-sistem', function () {
-    // Clear optimize cache
-    Artisan::call('optimize:clear');
-    
-    // Regrade attempts
-    $count = 0;
-    \App\Models\ExamAttempt::whereIn('status', ['SUBMITTED', 'AUTO_SUBMITTED'])->get()->each(function($attempt) use (&$count) {
-        app(\App\Services\GradingService::class)->gradeAttempt($attempt);
-        $count++;
-    });
 
-    return "Sistem berhasil diperbaiki! Cache telah dibersihkan dan {$count} ujian telah dikoreksi ulang. Silakan kembali ke dashboard.";
-});
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
