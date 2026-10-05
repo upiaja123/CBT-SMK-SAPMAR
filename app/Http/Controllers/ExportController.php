@@ -45,7 +45,6 @@ class ExportController extends Controller
         $attempts = ExamAttempt::with(['student.user', 'student.schoolClass'])
             ->where('exam_id', $exam->id)
             ->whereIn('status', ['SUBMITTED', 'AUTO_SUBMITTED'])
-            ->whereIn('grading_status', ['FINAL', 'AUTO_GRADED', 'GRADED'])
             ->orderBy('id')
             ->get();
 
@@ -81,7 +80,6 @@ class ExportController extends Controller
                 $q->where('school_class_id', $schoolClass->id);
             })
             ->whereIn('status', ['SUBMITTED', 'AUTO_SUBMITTED'])
-            ->whereIn('grading_status', ['FINAL', 'AUTO_GRADED', 'GRADED'])
             ->orderBy('id')
             ->get();
 

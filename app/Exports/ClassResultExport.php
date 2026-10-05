@@ -32,7 +32,6 @@ class ClassResultExport implements FromQuery, WithHeadings, WithMapping, WithSty
                 $q->where('school_class_id', $this->schoolClass->id);
             })
             ->whereIn('status', ['SUBMITTED', 'AUTO_SUBMITTED'])
-            ->whereIn('grading_status', ['FINAL', 'AUTO_GRADED', 'GRADED'])
             ->orderBy('id');
     }
 

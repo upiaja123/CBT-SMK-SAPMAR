@@ -27,7 +27,6 @@ class ExamResultExport implements FromQuery, WithHeadings, WithMapping, WithStyl
             ->with(['student.user', 'student.schoolClass'])
             ->where('exam_id', $this->exam->id)
             ->whereIn('status', ['SUBMITTED', 'AUTO_SUBMITTED'])
-            ->whereIn('grading_status', ['FINAL', 'AUTO_GRADED', 'GRADED'])
             ->orderBy('id');
     }
 
