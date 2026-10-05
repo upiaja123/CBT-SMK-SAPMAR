@@ -97,7 +97,7 @@
                                         </div>
                                         <div>
                                             <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Jawaban {{ auth()->user()->hasRole('siswa') ? 'Anda' : 'Siswa' }}:</p>
-                                            @if($snapshot->question_type === 'multiple_choice' || $snapshot->question_type === 'multiple_select')
+                                            @if($snapshot->question_type === 'multiple_choice' || $snapshot->question_type === 'complex_multiple_choice')
                                                 <div class="space-y-2">
                                                     @foreach($snapshot->optionSnapshots as $option)
                                                         @php
@@ -105,7 +105,7 @@
                                                             if ($answer && is_array($answer->answer)) {
                                                                 if ($snapshot->question_type === 'multiple_choice' && isset($answer->answer['option_id'])) {
                                                                     $userAnswered = $answer->answer['option_id'] == $option->id;
-                                                                } elseif ($snapshot->question_type === 'multiple_select' && isset($answer->answer['option_ids'])) {
+                                                                } elseif ($snapshot->question_type === 'complex_multiple_choice' && isset($answer->answer['option_ids'])) {
                                                                     $userAnswered = in_array($option->id, $answer->answer['option_ids']);
                                                                 }
                                                             }

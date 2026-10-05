@@ -222,7 +222,7 @@ class ExamAttemptService
                     throw new \InvalidArgumentException('Opsi jawaban tidak valid.');
                 }
             }
-        } elseif ($snapshot->question_type === 'multiple_correct') {
+        } elseif ($snapshot->question_type === 'complex_multiple_choice') {
             if (!is_array($answerData) || !isset($answerData['option_ids']) || !is_array($answerData['option_ids'])) {
                 throw new \InvalidArgumentException('Format jawaban tidak valid untuk multiple correct.');
             }

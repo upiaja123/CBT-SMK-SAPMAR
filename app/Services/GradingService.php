@@ -109,7 +109,7 @@ class GradingService
     {
         return match ($snapshot->question_type) {
             'multiple_choice', 'true_false' => $this->gradeMultipleChoice($snapshot, $answerData),
-            'multiple_correct' => $this->gradeMultipleCorrect($snapshot, $answerData),
+            'complex_multiple_choice' => $this->gradeMultipleCorrect($snapshot, $answerData),
             'matching' => $this->gradeMatching($snapshot, $answerData),
             'short_answer' => $this->gradeShortAnswer($snapshot, $answerData),
             'essay' => $this->gradeEssay($snapshot),
@@ -135,19 +135,22 @@ class GradingService
 
         $selectedOptionId = $answerData['option_id'];
 
-        // Find the correct option from the SNAPSHOT (not from live question bank)
-        $correctOption = $snapshot->optionSnapshots->firstWhere('is_correct', true);
+        $selectedOption = $snapshot->optionSnapshots->firstWhere('id', $selectedOptionId);
 
-        if (!$correctOption) {
-            // No correct option defined — cannot grade
-            return ['is_correct' => null, 'awarded_score' => 0, 'grading_status' => 'WAITING_MANUAL'];
+        if (!$selectedOption) {
+            return ['is_correct' => false, 'awarded_score' => 0, 'grading_status' => 'AUTO_GRADED'];
         }
 
-        $isCorrect = (int) $selectedOptionId === (int) $correctOption->id;
+        // Option weight is a percentage of the question's total score (0 to 100)
+        $optionWeight = (float) $selectedOption->weight;
+        $awardedScore = round($maxScore * ($optionWeight / 100), 2);
+
+        // Consider correct if marked as correct or has full weight
+        $isCorrect = $selectedOption->is_correct || $optionWeight >= 100;
 
         return [
             'is_correct' => $isCorrect,
-            'awarded_score' => $isCorrect ? $maxScore : 0,
+            'awarded_score' => $awardedScore,
             'grading_status' => 'AUTO_GRADED',
         ];
     }
@@ -182,9 +185,27 @@ class GradingService
 
         $isCorrect = $studentIds === $correctIds;
 
+        // Calculate partial score based on the weight of selected options
+        $selectedOptions = $snapshot->optionSnapshots->whereIn('id', $studentIds);
+        
+        $totalWeight = 0;
+        foreach ($selectedOptions as $opt) {
+            $totalWeight += (float) $opt->weight;
+        }
+
+        // Awarded score is based on the sum of weights (capped at 100%)
+        // So if total weight is 100, they get maxScore.
+        $totalWeight = min($totalWeight, 100);
+        $awardedScore = round($maxScore * ($totalWeight / 100), 2);
+
+        // If it perfectly matches, ensure they get max score even if weights were set poorly
+        if ($isCorrect) {
+            $awardedScore = $maxScore;
+        }
+
         return [
             'is_correct' => $isCorrect,
-            'awarded_score' => $isCorrect ? $maxScore : 0,
+            'awarded_score' => $awardedScore,
             'grading_status' => 'AUTO_GRADED',
         ];
     }
