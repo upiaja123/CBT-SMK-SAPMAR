@@ -109,71 +109,70 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                if (typeof Chart === 'undefined') {
+                    console.error("Chart.js gagal dimuat dari internet.");
+                    return;
+                }
 
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        try {
-            if (typeof Chart === 'undefined') {
-                console.error("Chart.js gagal dimuat dari internet.");
-                return;
-            }
-
-            // Chart 1: Bank Soal (Bar Chart)
-            const ctxBank = document.getElementById('guruBankSoalChart');
-            if (ctxBank) {
-                new Chart(ctxBank, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-                        datasets: [{
-                            label: 'Soal Dibuat',
-                            data: [12, 19, 3, 5, 2, {{ $stats['my_questions'] }}],
-                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                            borderColor: 'rgb(99, 102, 241)',
-                            borderWidth: 1,
-                            borderRadius: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: { beginAtZero: true }
+                // Chart 1: Bank Soal (Bar Chart)
+                const ctxBank = document.getElementById('guruBankSoalChart');
+                if (ctxBank) {
+                    new Chart(ctxBank, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                            datasets: [{
+                                label: 'Soal Dibuat',
+                                data: [12, 19, 3, 5, 2, {{ $stats['my_questions'] }}],
+                                backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                                borderColor: 'rgb(99, 102, 241)',
+                                borderWidth: 1,
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
                         }
-                    }
-                });
-            }
+                    });
+                }
 
-            // Chart 2: Ujian (Doughnut Chart)
-            const ctxExam = document.getElementById('guruExamsChart');
-            if (ctxExam) {
-                new Chart(ctxExam, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Aktif', 'Selesai/Draft'],
-                        datasets: [{
-                            data: [
-                                {{ $stats['active_exams'] }}, 
-                                {{ max(0, $stats['my_exams'] - $stats['active_exams']) }}
-                            ],
-                            backgroundColor: [
-                                'rgb(34, 197, 94)',
-                                'rgb(229, 231, 235)'
-                            ],
-                            hoverOffset: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
+                // Chart 2: Ujian (Doughnut Chart)
+                const ctxExam = document.getElementById('guruExamsChart');
+                if (ctxExam) {
+                    new Chart(ctxExam, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Aktif', 'Selesai/Draft'],
+                            datasets: [{
+                                data: [
+                                    {{ $stats['active_exams'] }}, 
+                                    {{ max(0, $stats['my_exams'] - $stats['active_exams']) }}
+                                ],
+                                backgroundColor: [
+                                    'rgb(34, 197, 94)',
+                                    'rgb(229, 231, 235)'
+                                ],
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error("Error merender chart guru:", e);
             }
-        } catch (e) {
-            console.error("Error merender chart guru:", e);
-        }
-    });
-</script>
-@endpush
+        });
+    </script>
+    @endpush
+</x-app-layout>

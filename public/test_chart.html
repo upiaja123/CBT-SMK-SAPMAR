@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+    <div style="position: relative; height: 256px; width: 100%; display: flex; justify-content: center;">
+        <canvas id="chart1"></canvas>
+    </div>
+    <div style="position: relative; height: 256px; width: 100%;">
+        <canvas id="chart2"></canvas>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            new Chart(document.getElementById('chart1'), {
+                type: 'doughnut',
+                data: { labels: ['A', 'B', 'C'], datasets: [{ data: [0, 0, 1] }] }
+            });
+            new Chart(document.getElementById('chart2'), {
+                type: 'bar',
+                data: { labels: ['A', 'B', 'C', 'D'], datasets: [{ data: [0, 0, 0, 0] }] }
+            });
+        });
+    </script>
+</body>
+</html>
