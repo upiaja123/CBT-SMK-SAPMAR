@@ -106,23 +106,18 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            @if(in_array($attempt->grading_status, ['FINAL', 'AUTO_GRADED', 'GRADED']))
-                                                <span class="font-bold">{{ rtrim(rtrim(number_format($attempt->total_score, 2), '0'), '.') }}</span>
-                                                <span class="text-gray-500">/ {{ rtrim(rtrim(number_format($attempt->max_total_score, 2), '0'), '.') }}</span>
-                                            @else
-                                                <span class="text-gray-400 italic">Belum Final</span>
+                                            <span class="font-bold">{{ rtrim(rtrim(number_format($attempt->total_score, 2), '0'), '.') }}</span>
+                                            <span class="text-gray-500">/ {{ rtrim(rtrim(number_format($attempt->max_total_score, 2), '0'), '.') }}</span>
+                                            @if(!in_array($attempt->grading_status, ['FINAL', 'AUTO_GRADED', 'GRADED']))
+                                                <div class="text-xs text-orange-500 italic mt-1">Belum Final</div>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            @if(in_array($attempt->grading_status, ['FINAL', 'AUTO_GRADED', 'GRADED']))
-                                                @php
-                                                    $maxScore = $attempt->max_total_score > 0 ? $attempt->max_total_score : 1;
-                                                    $percentage = ($attempt->total_score / $maxScore) * 100;
-                                                @endphp
-                                                {{ number_format($percentage, 0) }}%
-                                            @else
-                                                -
-                                            @endif
+                                            @php
+                                                $maxScore = $attempt->max_total_score > 0 ? $attempt->max_total_score : 1;
+                                                $percentage = ($attempt->total_score / $maxScore) * 100;
+                                            @endphp
+                                            {{ number_format($percentage, 0) }}%
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             @can('viewResult', $attempt)
