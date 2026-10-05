@@ -114,7 +114,47 @@
 
                 <!-- Review Panel -->
                 <div class="space-y-6">
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    
+                    {{-- Lock Status & Unlock Panel --}}
+                    @if(in_array($attempt->status, ['SUBMITTED', 'AUTO_SUBMITTED']))
+                    <div class="mb-5 p-4 bg-red-50 border border-red-300 rounded-lg">
+                        <p class="font-bold text-red-800">Sesi Ujian Telah Berakhir</p>
+                        <p class="text-xs text-red-700 mt-1">Status: {{ $attempt->status }}. Siswa telah mengumpulkan ujian atau dikumpulkan paksa karena pelanggaran maksimum (5 kali).</p>
+                        @can('control', $exam)
+                        <form method="POST" action="{{ route('exams.attempts.reopen-review', [$exam, $attempt]) }}" class="mt-3">
+                            @csrf
+                            <button type="submit" onclick="return confirm('Kembalikan sesi {{ $attempt->student->user->name }} ke IN_PROGRESS? Waktu akan terus berjalan!')"
+                                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg">
+                                Buka Ujian Kembali
+                            </button>
+                        </form>
+                        @endcan
+                    </div>
+                    @elseif($attempt->locked_at)
+                    <div class="mb-5 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+                        <p class="font-bold text-yellow-800">Sesi Siswa Sedang Dikunci</p>
+                        <p class="text-xs text-yellow-700 mt-1">Siswa tidak bisa menjawab soal. Dikunci: {{ $attempt->locked_at->format('d/m/Y H:i:s') }}</p>
+                        @if($attempt->lock_reason)
+                            <p class="text-xs text-yellow-700 mt-1">Alasan: <strong>{{ $attempt->lock_reason }}</strong></p>
+                        @endif
+                        @can('control', $exam)
+                        <form method="POST" action="{{ route('exams.attempts.unlock-review', [$exam, $attempt]) }}" class="mt-3">
+                            @csrf
+                            <button type="submit" onclick="return confirm('Buka kunci sesi {{ $attempt->student->user->name }}?')"
+                                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg">
+                                Buka Kunci dan Izinkan Lanjut Ujian
+                            </button>
+                        </form>
+                        @endcan
+                    </div>
+                    @else
+                    <div class="mb-5 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                        Sesi tidak dikunci - siswa bebas mengerjakan.
+                    </div>
+                    @endif
+                    @if(session('success'))<div class="mb-4 p-3 bg-green-100 text-green-800 text-sm rounded-lg">{{ session('success') }}</div>@endif
+                    @if(session('error'))<div class="mb-4 p-3 bg-red-100 text-red-800 text-sm rounded-lg">{{ session('error') }}</div>@endif
+<div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Status Review</h3>
                             
@@ -333,3 +373,4 @@
     </script>
     @endpush
 </x-app-layout>
+

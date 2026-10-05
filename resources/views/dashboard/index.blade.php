@@ -21,7 +21,7 @@
             </div>
             <div>
                 <p class="text-sm text-gray-500 font-medium">Ujian Aktif</p>
-                <h3 class="text-2xl font-bold text-gray-800">0</h3>
+                <h3 class="text-2xl font-bold text-gray-800">{{ \App\Models\Exam::where('status', 'PUBLISHED')->where('start_at', '<=', now())->where('end_at', '>=', now())->count() }}</h3>
             </div>
         </div>
         
@@ -31,7 +31,7 @@
             </div>
             <div>
                 <p class="text-sm text-gray-500 font-medium">Bank Soal</p>
-                <h3 class="text-2xl font-bold text-gray-800">0</h3>
+                <h3 class="text-2xl font-bold text-gray-800">{{ \App\Models\QuestionBank::count() }}</h3>
             </div>
         </div>
         
@@ -41,7 +41,7 @@
             </div>
             <div>
                 <p class="text-sm text-gray-500 font-medium">Total Pertanyaan</p>
-                <h3 class="text-2xl font-bold text-gray-800">0</h3>
+                <h3 class="text-2xl font-bold text-gray-800">{{ \App\Models\Question::count() }}</h3>
             </div>
         </div>
     </div>

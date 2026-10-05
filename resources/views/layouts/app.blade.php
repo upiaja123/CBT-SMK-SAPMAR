@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ isset($title) ? $title . ' — ' : '' }}{{ config('app.name') }}</title>
+    <title>{{ isset($title) ? $title . ' - ' : '' }}{{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     {{-- KaTeX: Render formula matematika di semua halaman --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -23,13 +23,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mathquill@0.10.1/build/mathquill.css">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/mathquill@0.10.1/build/mathquill.min.js" defer></script>
+    {{-- Chart.js untuk Dashboard --}}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     @stack('styles')
 </head>
 <body class="h-full bg-gray-50 font-sans antialiased">
 
     <div class="flex h-full min-h-screen" x-data="{ sidebarOpen: false }">
 
-        {{-- ── Sidebar Overlay (mobile) ──────────────────────────────────── --}}
+        {{-- â”€â”€ Sidebar Overlay (mobile) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
         <div x-show="sidebarOpen"
             x-transition:enter="transition-opacity ease-linear duration-200"
             x-transition:enter-start="opacity-0"
@@ -42,7 +44,7 @@
             style="display: none;">
         </div>
 
-        {{-- ── Sidebar ───────────────────────────────────────────────────── --}}
+        {{-- â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
         <aside id="sidebar"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             class="fixed top-0 left-0 z-30 h-full w-64 bg-gradient-to-b from-sapta-900 to-sapta-800 shadow-2xl transform transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0 flex flex-col flex-shrink-0">
@@ -93,7 +95,7 @@
             </div>
         </aside>
 
-        {{-- ── Main Content ──────────────────────────────────────────────── --}}
+        {{-- â”€â”€ Main Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
             {{-- Top Bar --}}
@@ -202,5 +204,59 @@
     </div>
 
     @stack('scripts')
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-save form inputs to localStorage
+            const forms = document.querySelectorAll('form[method="POST"]:not([data-no-autosave])');
+            forms.forEach(form => {
+                const id = 'autosave_' + window.location.pathname + '_' + (form.id || form.getAttribute('action') || 'default');
+                
+                // Restore saved data
+                const saved = localStorage.getItem(id);
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        Object.keys(data).forEach(key => {
+                            const input = form.elements[key];
+                            if (input && input.type !== 'file' && input.type !== 'password' && input.type !== 'hidden' && key !== '_token' && key !== '_method') {
+                                if (input.type === 'checkbox' || input.type === 'radio') {
+                                    if (input.length) { 
+                                        input.forEach(r => { if (r.value === data[key]) r.checked = true; });
+                                    } else {
+                                        input.checked = data[key];
+                                    }
+                                } else {
+                                    input.value = data[key];
+                                }
+                            }
+                        });
+                    } catch (e) {
+                        console.error("Autosave restore error", e);
+                    }
+                }
+
+                // Save data on input change
+                form.addEventListener('input', function(e) {
+                    if(e.target.type === 'password' || e.target.type === 'file' || e.target.type === 'hidden') return;
+                    
+                    const data = {};
+                    const formData = new FormData(form);
+                    for (let [key, value] of formData.entries()) {
+                        if (key !== '_token' && key !== '_method' && typeof value === 'string') {
+                            data[key] = value;
+                        }
+                    }
+                    localStorage.setItem(id, JSON.stringify(data));
+                });
+                
+                // Clear data on submit
+                form.addEventListener('submit', function() {
+                    localStorage.removeItem(id);
+                });
+            });
+        });
+    </script>
 </body>
 </html>
+

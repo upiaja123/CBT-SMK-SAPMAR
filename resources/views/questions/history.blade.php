@@ -49,7 +49,7 @@
                                     </div>
                                     
                                     <div class="prose max-w-none text-gray-800 text-sm mb-4">
-                                        {!! nl2br(e($version->content)) !!}
+                                        {!! $version->content !!}
                                     </div>
 
                                     @if($version->options->count() > 0)
@@ -65,8 +65,8 @@
                                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path></svg>
                                                             @endif
                                                         </span>
-                                                        <span class="{{ $option->is_correct ? 'font-medium text-gray-900' : 'text-gray-600' }}">
-                                                            {!! nl2br(e($option->content)) !!} 
+                                                        <span class="{{ $option->is_correct ? 'font-medium text-gray-900' : 'text-gray-600' }} block prose">
+                                                            {!! $option->content !!} 
                                                             @if($option->weight > 0)
                                                                 <span class="text-xs text-gray-400 ml-1">({{ $option->weight }}%)</span>
                                                             @endif

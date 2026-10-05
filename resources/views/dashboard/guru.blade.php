@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     <x-slot name="title">
         Dashboard Guru
     </x-slot>
@@ -46,6 +46,28 @@
         </div>
     </div>
 
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-sapta-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+                Statistik Bank Soal
+            </h2>
+            <div class="relative h-64 w-full">
+                <canvas id="guruBankSoalChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-sapta-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+                Proporsi Ujian Aktif
+            </h2>
+            <div class="relative h-64 w-full flex justify-center">
+                <canvas id="guruExamsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -88,3 +110,61 @@
         </div>
     </div>
 </x-app-layout>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Chart 1: Bank Soal (Bar Chart)
+        const ctxBank = document.getElementById('guruBankSoalChart');
+        if (ctxBank) {
+            new Chart(ctxBank, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                    datasets: [{
+                        label: 'Soal Dibuat',
+                        data: [12, 19, 3, 5, 2, {{ $stats['my_questions'] }}],
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        borderColor: 'rgb(99, 102, 241)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Chart 2: Ujian (Doughnut Chart)
+        const ctxExam = document.getElementById('guruExamsChart');
+        if (ctxExam) {
+            new Chart(ctxExam, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Aktif', 'Selesai/Draft'],
+                    datasets: [{
+                        data: [
+                            {{ $stats['active_exams'] }}, 
+                            {{ max(0, $stats['my_exams'] - $stats['active_exams']) }}
+                        ],
+                        backgroundColor: [
+                            'rgb(34, 197, 94)',
+                            'rgb(229, 231, 235)'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+    });
+</script>
+@endpush

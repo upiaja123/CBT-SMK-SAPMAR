@@ -24,7 +24,7 @@ class ExamProctorController extends Controller
         $proctor = User::findOrFail($request->proctor_id);
 
         if (!$proctor->hasRole('proktor')) {
-            return response()->json(['message' => 'User is not a proctor.'], 400);
+            return back()->with('error', 'User yang dipilih bukan proktor.');
         }
 
         $assignment = ProctorExamAssignment::updateOrCreate(
@@ -43,7 +43,7 @@ class ExamProctorController extends Controller
             );
         }
 
-        return response()->json(['message' => 'Proctor assigned successfully.']);
+        return back()->with('success', 'Proktor berhasil ditugaskan ke ujian ini.');
     }
 
     public function destroy(Request $request, Exam $exam, $proctorId)
@@ -67,6 +67,6 @@ class ExamProctorController extends Controller
             "Removed proctor " . ($proctor ? $proctor->name : "ID {$proctorId}") . " from exam {$exam->title}"
         );
 
-        return response()->json(['message' => 'Proctor removed successfully.']);
+        return back()->with('success', 'Proktor berhasil dihapus dari ujian ini.');
     }
 }

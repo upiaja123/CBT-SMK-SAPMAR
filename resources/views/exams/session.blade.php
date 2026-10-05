@@ -63,7 +63,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
             <h2 class="text-2xl font-bold text-gray-900 mb-2">Ujian Terkunci</h2>
-            <p class="text-gray-600">Ujian sementara dikunci oleh pengawas.</p>
+            <p class="text-gray-600">Akses ujian Anda sementara dikunci karena sistem mendeteksi adanya aktivitas yang tidak wajar (seperti berpindah tab/keluar layar penuh).<br><br><b>Silakan hubungi Proktor atau Pengawas Ujian untuk membuka kembali akses Anda.</b></p>
         </div>
 
         <!-- Question Area -->
@@ -115,7 +115,18 @@
                                            :disabled="status !== 'IN_PROGRESS'"
                                            @change="handleAnswerChange(currentQuestion.id, option.id)">
                                 </div>
-                                <div class="ml-3 text-gray-700 text-sm" x-html="option.content"></div>
+                                <div class="ml-3 text-gray-900 text-sm w-full">
+                                    <div x-show="option.content !== null && option.content !== ''" x-html="option.content" class="prose max-w-none text-base"></div>
+                                    <template x-if="option.media && option.media.length > 0">
+                                        <div class="mt-2 space-y-2">
+                                            <template x-for="m in option.media" :key="m.id">
+                                                <template x-if="m.mime_type.startsWith('image/')">
+                                                    <img :src="m.url" class="max-h-48 rounded-lg object-contain border border-gray-200" alt="Option Image">
+                                                </template>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
                             </label>
                         </template>
                     </div>
@@ -199,36 +210,49 @@
             <div class="mt-6 flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <button @click="prevQuestion" 
                         :disabled="currentQuestionIndex === 0"
-                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
-                    <span class="hidden sm:inline">&larr; Sebelumnya</span>
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-bold bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition uppercase text-sm">
+                    <span class="hidden sm:inline">Sebelumnya</span>
                     <span class="sm:hidden">&larr;</span>
                 </button>
                 
-                <!-- Sync Status Indicator -->
-                <div class="flex items-center space-x-2 text-xs font-medium">
-                    <template x-if="syncStatus === 'saving'">
-                        <span class="text-blue-600 flex items-center"><svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Menyimpan...</span>
-                    </template>
-                    <template x-if="syncStatus === 'saved'">
-                        <span class="text-green-600 flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Tersimpan</span>
-                    </template>
-                    <template x-if="syncStatus === 'error'">
-                        <span class="text-red-600 flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Belum tersimpan (Offline)</span>
-                    </template>
+                <!-- Ragu-ragu Checkbox in the middle -->
+                <div class="flex items-center justify-center mx-4" x-show="status === 'IN_PROGRESS' && !is_locked">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox"
+                               class="w-5 h-5 text-yellow-500 bg-white border-gray-300 rounded focus:ring-yellow-500 transition"
+                               :checked="doubtful[currentQuestion?.id]"
+                               @change="toggleDoubtful(currentQuestion?.id)">
+                        <span class="text-sm font-bold text-yellow-600">Ragu-Ragu</span>
+                    </label>
                 </div>
 
-                <button @click="nextQuestion" 
-                        x-show="currentQuestionIndex < questions.length - 1"
-                        class="px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-white hover:bg-blue-700 transition">
-                    <span class="hidden sm:inline">Berikutnya &rarr;</span>
-                    <span class="sm:hidden">&rarr;</span>
-                </button>
+                <div class="flex items-center space-x-3">
+                    <!-- Sync Status Indicator -->
+                    <div class="hidden md:flex items-center space-x-2 text-xs font-medium mr-2">
+                        <template x-if="syncStatus === 'saving'">
+                            <span class="text-blue-600 flex items-center"><svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></span>
+                        </template>
+                        <template x-if="syncStatus === 'saved'">
+                            <span class="text-green-600 flex items-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></span>
+                        </template>
+                        <template x-if="syncStatus === 'error'">
+                            <span class="text-red-600 flex items-center" title="Belum tersimpan (Offline)"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></span>
+                        </template>
+                    </div>
 
-                <button x-show="currentQuestionIndex === questions.length - 1 && status === 'IN_PROGRESS'"
-                        @click="showSubmitModal = true"
-                        class="px-4 py-2 bg-green-600 border border-transparent rounded-lg text-white hover:bg-green-700 transition font-bold">
-                    Selesai
-                </button>
+                    <button @click="nextQuestion" 
+                            x-show="currentQuestionIndex < questions.length - 1"
+                            class="px-4 py-2 bg-sapta-600 border border-transparent rounded-lg text-white hover:bg-sapta-700 transition uppercase text-sm font-bold shadow-sm">
+                        <span class="hidden sm:inline">Selanjutnya</span>
+                        <span class="sm:hidden">&rarr;</span>
+                    </button>
+
+                    <button x-show="currentQuestionIndex === questions.length - 1 && status === 'IN_PROGRESS'"
+                            @click="showSubmitModal = true"
+                            class="px-4 py-2 bg-green-600 border border-transparent rounded-lg text-white hover:bg-green-700 transition uppercase text-sm font-bold shadow-sm">
+                        Selesai
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -239,10 +263,12 @@
                 <div class="grid grid-cols-5 gap-2">
                     <template x-for="(q, index) in questions" :key="q.id">
                         <button @click="goToQuestion(index)"
-                                class="w-full aspect-square flex items-center justify-center rounded border font-medium text-sm transition-colors"
+                                class="w-full aspect-square flex flex-col items-center justify-center rounded border font-medium text-sm transition-colors relative"
                                 :class="{
-                                    'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-300 ring-offset-1': currentQuestionIndex === index,
-                                    'bg-gray-800 text-white border-gray-800': currentQuestionIndex !== index && answers[q.id],
+                                    'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-300 ring-offset-1': currentQuestionIndex === index && !doubtful[q.id],
+                                    'bg-yellow-500 text-white border-yellow-500 ring-2 ring-yellow-300 ring-offset-1': currentQuestionIndex === index && doubtful[q.id],
+                                    'bg-yellow-400 text-white border-yellow-400': currentQuestionIndex !== index && answers[q.id] && doubtful[q.id],
+                                    'bg-gray-800 text-white border-gray-800': currentQuestionIndex !== index && answers[q.id] && !doubtful[q.id],
                                     'bg-white text-gray-600 border-gray-300 hover:bg-gray-50': currentQuestionIndex !== index && !answers[q.id]
                                 }">
                             <span x-text="index + 1"></span>
@@ -352,6 +378,7 @@
                 questions: [],
                 currentQuestionIndex: 0,
                 answers: {}, // local UI state: { questionId: optionId }
+                doubtful: {}, // local UI state: { questionId: boolean }
                 
                 // Sync queue & state
                 syncQueue: [],
@@ -449,6 +476,9 @@
                         this.questions.forEach(q => {
                             if (q.participant_answer && q.participant_answer.option_id) {
                                 this.answers[q.id] = q.participant_answer.option_id;
+                            }
+                            if (q.participant_answer && q.participant_answer.is_doubtful) {
+                                this.doubtful[q.id] = true;
                             }
                         });
                         
@@ -612,17 +642,23 @@
                     }
                 },
 
-                handleAnswerChange(questionId, optionId) {
+                handleAnswerChange(questionId, answerData) {
                     if (this.status !== 'IN_PROGRESS' || this.is_locked) return;
                     
-                    this.answers[questionId] = optionId;
+                    this.answers[questionId] = answerData;
                     
                     const snapshotId = this.questions.find(q => q.id === questionId)?.id;
                     if (!snapshotId) return;
 
+                    let finalAnswerPayload = typeof answerData === 'object' && answerData !== null 
+                        ? { ...answerData } 
+                        : { option_id: answerData };
+                        
+                    finalAnswerPayload.is_doubtful = this.doubtful[questionId] || false;
+
                     const payload = {
                         attempt_question_snapshot_id: snapshotId,
-                        answer: { option_id: optionId },
+                        answer: finalAnswerPayload,
                         client_timestamp: new Date().getTime()
                     };
                     
@@ -635,6 +671,13 @@
                     
                     this.syncStatus = 'saving';
                     this.flushSyncQueue();
+                },
+
+                toggleDoubtful(questionId) {
+                    if (this.status !== 'IN_PROGRESS' || this.is_locked) return;
+                    this.doubtful[questionId] = !this.doubtful[questionId];
+                    // Always sync to save the doubtful state
+                    this.handleAnswerChange(questionId, this.answers[questionId] || null);
                 },
 
                 async flushSyncQueue() {

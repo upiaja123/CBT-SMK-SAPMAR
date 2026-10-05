@@ -112,6 +112,16 @@
 
     @endcanany
 
+    @if ($role === 'super_admin' || $role === 'proktor')
+        <div class="pt-3 pb-1 px-3 text-[10px] font-bold text-sapta-300 uppercase tracking-wider">Integritas Ujian</div>
+        
+        <a href="{{ route('exams.monitoring.list') }}"
+            class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition {{ request()->routeIs('exams.monitoring.*') ? 'bg-white/15 text-white font-semibold' : 'text-sapta-100 hover:bg-white/10 hover:text-white' }}">
+            <svg class="w-4 h-4 text-sapta-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            Proctoring & Monitoring
+        </a>
+    @endif
+
     @if(auth()->user()->hasAnyRole(['super_admin', 'kurikulum', 'guru', 'siswa']))
         <div class="pt-3 pb-1 px-3 text-[10px] font-bold text-sapta-300 uppercase tracking-wider">Laporan</div>
         <a href="{{ route('reports.index') }}"

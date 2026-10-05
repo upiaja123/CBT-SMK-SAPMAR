@@ -29,4 +29,9 @@ class AttemptOptionSnapshot extends Model
     {
         return $this->belongsTo(AttemptQuestionSnapshot::class, 'attempt_question_snapshot_id');
     }
+
+    public function originalOption(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(QuestionOption::class, 'original_option_id');
+    }
 }

@@ -37,7 +37,7 @@ class ExamAttemptController extends Controller
         }
 
         // 2. Fetch snapshots and answers
-        $attempt->load(['questionSnapshots.optionSnapshots', 'questionSnapshots.participantAnswer', 'questionSnapshots.originalVersion.media']);
+        $attempt->load(['questionSnapshots.optionSnapshots.originalOption.media', 'questionSnapshots.participantAnswer', 'questionSnapshots.originalVersion.media']);
 
         // 3. Map for student reading (do NOT expose is_correct or correct_answer)
         $questions = $attempt->questionSnapshots->map(function ($q) {
@@ -73,6 +73,13 @@ class ExamAttemptController extends Controller
                         'id' => $opt->id,
                         'content' => $opt->content,
                         'order' => $opt->order,
+                        'media' => $opt->originalOption && $opt->originalOption->media ? $opt->originalOption->media->map(function ($m) {
+                            return [
+                                'id' => $m->id,
+                                'url' => route('media.show', $m->id),
+                                'mime_type' => $m->mime_type,
+                            ];
+                        }) : [],
                         // STRIPPED: is_correct
                         // STRIPPED: weight
                     ];

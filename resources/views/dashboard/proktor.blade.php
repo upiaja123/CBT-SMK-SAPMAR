@@ -24,6 +24,18 @@
             </div>
         </div>
     </div>
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 gap-6 mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-sapta-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+                Proporsi Ujian & Sesi Berjalan
+            </h2>
+            <div class="relative h-64 w-full flex justify-center">
+                <canvas id="proktorChart"></canvas>
+            </div>
+        </div>
+    </div>
 
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -64,3 +76,35 @@
         </div>
     </div>
 </x-app-layout>
+
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('proktorChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ujian Aktif', 'Sesi Berjalan'],
+                    datasets: [{
+                        data: [
+                            {{ $stats['active_exams'] }}, 
+                            {{ $stats['ongoing_attempts'] }}
+                        ],
+                        backgroundColor: [
+                            'rgb(34, 197, 94)',
+                            'rgb(99, 102, 241)'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+    });
+</script>
+@endpush

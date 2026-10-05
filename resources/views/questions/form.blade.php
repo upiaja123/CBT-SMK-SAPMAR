@@ -369,6 +369,48 @@
                 isSaving: false,
                 isUploading: false,
                 errors: {},
+                draftKey: `question_draft_${questionBankId}_${existingQuestion ? existingQuestion.id : 'new'}`,
+
+                init() {
+                    this.loadDraft();
+
+                    this.$watch('form', () => this.saveDraft(), { deep: true });
+                    this.$watch('shortAnswerText', () => this.saveDraft());
+                    this.$watch('matchingPairs', () => this.saveDraft(), { deep: true });
+                },
+
+                saveDraft() {
+                    if (this.isSaving) return;
+                    const draft = {
+                        form: this.form,
+                        shortAnswerText: this.shortAnswerText,
+                        matchingPairs: this.matchingPairs
+                    };
+                    localStorage.setItem(this.draftKey, JSON.stringify(draft));
+                },
+
+                loadDraft() {
+                    const saved = localStorage.getItem(this.draftKey);
+                    if (saved) {
+                        try {
+                            const draft = JSON.parse(saved);
+                            // Verify draft matches current state to some degree
+                            if (draft.form && confirm('Terdapat data belum tersimpan dari sesi sebelumnya. Apakah Anda ingin mengembalikan data tersebut?')) {
+                                this.form = draft.form;
+                                this.shortAnswerText = draft.shortAnswerText || '';
+                                this.matchingPairs = draft.matchingPairs || [];
+                            } else {
+                                this.clearDraft();
+                            }
+                        } catch (e) {
+                            this.clearDraft();
+                        }
+                    }
+                },
+
+                clearDraft() {
+                    localStorage.removeItem(this.draftKey);
+                },
 
                 requiresOptions() {
                     return ['multiple_choice', 'complex_multiple_choice', 'true_false'].includes(this.form.type);
@@ -570,6 +612,7 @@
                             }
                         } else {
                             // Success
+                            this.clearDraft();
                             window.location.href = `/question_banks/${questionBankId}`;
                         }
                     } catch (error) {

@@ -28,11 +28,11 @@
                     </x-nav-link>
                     @endcan
 
-                    @can('exams.monitor')
-                    <x-nav-link :href="route('exams.monitoring.index')" :active="request()->routeIs('exams.monitoring.*')">
-                        {{ __('Monitoring') }}
+                    @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('proktor'))
+                    <x-nav-link :href="route('exams.monitoring.list')" :active="request()->routeIs('exams.monitoring.*')">
+                        {{ __('Proctoring & Integritas') }}
                     </x-nav-link>
-                    @endcan
+                    @endif
 
                     @can('analytics.view')
                     <x-nav-link :href="route('analytics.index')" :active="request()->routeIs('analytics.*')">
@@ -107,11 +107,11 @@
             </x-responsive-nav-link>
             @endcan
 
-            @can('exams.monitor')
-            <x-responsive-nav-link :href="route('exams.monitoring.index')" :active="request()->routeIs('exams.monitoring.*')">
-                {{ __('Monitoring') }}
+            @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('proktor'))
+            <x-responsive-nav-link :href="route('exams.monitoring.list')" :active="request()->routeIs('exams.monitoring.*')">
+                {{ __('Proctoring & Integritas') }}
             </x-responsive-nav-link>
-            @endcan
+            @endif
 
             @can('analytics.view')
             <x-responsive-nav-link :href="route('analytics.index')" :active="request()->routeIs('analytics.*')">

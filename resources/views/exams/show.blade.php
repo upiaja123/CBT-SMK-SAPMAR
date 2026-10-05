@@ -161,7 +161,17 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            
+            @if(session('success'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ session('success') }}</span>
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ session('error') }}</span>
+                </div>
+            @endif
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Info Kiri -->
                 <div class="md:col-span-2 space-y-6">
@@ -356,6 +366,47 @@
                                 <span class="text-sm text-gray-400 italic">Tidak ada peserta susulan</span>
                             @endif
                         </div>
+                    </div>                    </div>
+
+                    <!-- Proktor Ujian -->
+                    <div class="bg-white shadow-sm sm:rounded-lg p-6 mt-6">
+                        <div class="flex justify-between items-center border-b pb-2 mb-4">
+                            <h3 class="text-lg font-bold text-gray-900">Penugasan Proktor</h3>
+                            @can('assignProctor', $exam)
+                                <button onclick="document.getElementById('proktor-modal').classList.remove('hidden')" class="inline-flex items-center px-3 py-1 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700 font-semibold hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    + Tambah Proktor
+                                </button>
+                            @endcan
+                        </div>
+                        
+                        @php
+                            $proctors = \App\Models\ProctorExamAssignment::with('proctor')->where('exam_id', $exam->id)->where('active', true)->get();
+                        @endphp
+                        
+                        <div class="mb-4">
+                            @if($proctors->count() > 0)
+                                <ul class="text-sm text-gray-700 space-y-2">
+                                    @foreach($proctors as $assignment)
+                                        <li class="flex items-center justify-between group p-2 bg-gray-50 border rounded">
+                                            <div class="flex items-center gap-2">
+                                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                <span>{{ $assignment->proctor->name }}</span>
+                                            </div>
+                                            @can('assignProctor', $exam)
+                                                <form action="{{ route('exams.proctors.destroy', [$exam, $assignment->proctor_id]) }}" method="POST" class="inline">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="text-red-500 hover:text-red-700 transition-colors" title="Hapus Proktor" onclick="return confirm('Hapus proktor ini?')">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                    </button>
+                                                </form>
+                                            @endcan
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <span class="text-sm text-gray-400 italic">Belum ada proktor yang ditugaskan</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -395,7 +446,7 @@
                                         </div>
                                     </template>
                                 </div>
-                                <p x-show="document.getElementById('susulan_student_id') && document.getElementById('susulan_student_id').value" class="text-xs text-green-600 mt-1">✓ Siswa terpilih: <span x-text="selectedName" class="font-semibold"></span></p>
+                                <p x-show="document.getElementById('susulan_student_id') && document.getElementById('susulan_student_id').value" class="text-xs text-green-600 mt-1">âœ“ Siswa terpilih: <span x-text="selectedName" class="font-semibold"></span></p>
                                 <p x-show="(!document.getElementById('susulan_student_id') || !document.getElementById('susulan_student_id').value) && search.length > 0" class="text-xs text-gray-400 mt-1">Pilih siswa dari daftar.</p>
                             </div>
                             
@@ -458,7 +509,7 @@
                                         </div>
                                     </template>
                                 </div>
-                                <p x-show="document.getElementById('ekstra_student_id') && document.getElementById('ekstra_student_id').value" class="text-xs text-green-600 mt-1">✓ Siswa terpilih: <span x-text="selectedName" class="font-semibold"></span></p>
+                                <p x-show="document.getElementById('ekstra_student_id') && document.getElementById('ekstra_student_id').value" class="text-xs text-green-600 mt-1">âœ“ Siswa terpilih: <span x-text="selectedName" class="font-semibold"></span></p>
                                 <p x-show="(!document.getElementById('ekstra_student_id') || !document.getElementById('ekstra_student_id').value) && search.length > 0" class="text-xs text-gray-400 mt-1">Pilih siswa dari daftar.</p>
                             </div>
                         </div>
@@ -475,4 +526,48 @@
             </div>
         </div>
     </div>
+
+    <!-- Proktor Modal -->
+    <div id="proktor-modal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="document.getElementById('proktor-modal').classList.add('hidden')"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form action="{{ route('exams.proctors.store', $exam) }}" method="POST">
+                    @csrf
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Tugaskan Proktor</h3>
+                                <div class="mt-4 space-y-4">
+                                    @php
+                                        $availableProctors = \App\Models\User::whereHas('roles', function($q) { $q->where('name', 'proktor'); })->get();
+                                    @endphp
+                                    <div>
+                                        <label for="proctor_id" class="block text-sm font-medium text-gray-700">Pilih Proktor</label>
+                                        <select name="proctor_id" id="proctor_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" required>
+                                            <option value="">-- Pilih Proktor --</option>
+                                            @foreach($availableProctors as $p)
+                                                <option value="{{ $p->id }}">{{ $p->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Tugaskan
+                        </button>
+                        <button type="button" onclick="document.getElementById('proktor-modal').classList.add('hidden')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </x-app-layout>
+
+

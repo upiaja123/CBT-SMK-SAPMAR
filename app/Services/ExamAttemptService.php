@@ -211,15 +211,16 @@ class ExamAttemptService
     {
         // Very strict server-side validation against the snapshot's available options.
         if ($snapshot->question_type === 'multiple_choice' || $snapshot->question_type === 'true_false') {
-            if (!is_array($answerData) || !isset($answerData['option_id'])) {
+            if (!is_array($answerData) || (!array_key_exists('option_id', $answerData) && !isset($answerData['is_doubtful']))) {
                 throw new \InvalidArgumentException('Format jawaban tidak valid untuk multiple choice.');
             }
 
-            $optionId = $answerData['option_id'];
-
-            $isValid = $snapshot->optionSnapshots()->where('id', $optionId)->exists();
-            if (!$isValid) {
-                throw new \InvalidArgumentException('Opsi jawaban tidak valid.');
+            if (isset($answerData['option_id']) && $answerData['option_id'] !== null) {
+                $optionId = $answerData['option_id'];
+                $isValid = $snapshot->optionSnapshots()->where('id', $optionId)->exists();
+                if (!$isValid) {
+                    throw new \InvalidArgumentException('Opsi jawaban tidak valid.');
+                }
             }
         } elseif ($snapshot->question_type === 'multiple_correct') {
             if (!is_array($answerData) || !isset($answerData['option_ids']) || !is_array($answerData['option_ids'])) {
@@ -402,7 +403,11 @@ class ExamAttemptService
         });
 
         $attempt->refresh();
-        event(new \App\Events\ExamAttemptControlUpdated($attempt, 'unlock'));
+        try {
+            event(new \App\Events\ExamAttemptControlUpdated($attempt, 'unlock'));
+        } catch (\Illuminate\Broadcasting\BroadcastException $e) {
+            \Illuminate\Support\Facades\Log::warning('Broadcast failed on unlockAttempt: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -429,6 +434,43 @@ class ExamAttemptService
         $this->finalizeAttempt($attempt, isAutoSubmit: true);
 
         $attempt->refresh();
-        event(new \App\Events\ExamAttemptControlUpdated($attempt, 'force_submit'));
+        try {
+            event(new \App\Events\ExamAttemptControlUpdated($attempt, 'force_submit'));
+        } catch (\Illuminate\Broadcasting\BroadcastException $e) {
+            \Illuminate\Support\Facades\Log::warning('Broadcast failed on forceSubmit: ' . $e->getMessage());
+        }
+    }
+    public function reopenAttempt(ExamAttempt $attempt, \App\Models\User $actor): void
+    {
+        if (!in_array($attempt->status, ['SUBMITTED', 'AUTO_SUBMITTED'])) {
+            throw new \InvalidArgumentException('Hanya sesi yang sudah dikumpulkan yang bisa dibuka kembali.');
+        }
+
+        DB::transaction(function () use ($attempt, $actor) {
+            $locked = ExamAttempt::where('id', $attempt->id)->lockForUpdate()->first();
+            $locked->status = 'IN_PROGRESS';
+            $locked->submitted_at = null;
+            $locked->grading_status = 'UNGRADED';
+            $locked->total_score = 0;
+            $locked->locked_at = null;
+            $locked->locked_by = null;
+            $locked->lock_reason = null;
+            $locked->save();
+
+            \App\Models\AuditLog::create([
+                'user_id' => $actor->id,
+                'action' => 'exam_attempt_reopened',
+                'auditable_type' => 'exam_attempts',
+                'auditable_id' => $locked->id,
+                'new_values' => ['status' => 'IN_PROGRESS', 'reopened_at' => now()->toIso8601String()],
+            ]);
+        });
+
+        $attempt->refresh();
+        try {
+            event(new \App\Events\ExamAttemptControlUpdated($attempt, 'reopen'));
+        } catch (\Illuminate\Broadcasting\BroadcastException $e) {
+            \Illuminate\Support\Facades\Log::warning('Broadcast failed on reopenAttempt: ' . $e->getMessage());
+        }
     }
 }

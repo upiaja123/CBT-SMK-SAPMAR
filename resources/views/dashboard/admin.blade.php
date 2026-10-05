@@ -45,6 +45,28 @@
         </div>
     </div>
 
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-sapta-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                Statistik Pengguna
+            </h2>
+            <div class="relative h-64 w-full flex justify-center">
+                <canvas id="adminUsersChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-sapta-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                Aktivitas Sistem
+            </h2>
+            <div class="relative h-64 w-full">
+                <canvas id="adminActivityChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -106,3 +128,68 @@
         </div>
     </div>
 </x-app-layout>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Chart 1: Pengguna (Doughnut Chart)
+        const ctxUsers = document.getElementById('adminUsersChart');
+        if (ctxUsers) {
+            new Chart(ctxUsers, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Siswa', 'Guru', 'Lainnya'],
+                    datasets: [{
+                        data: [
+                            {{ $stats['total_students'] }}, 
+                            {{ $stats['total_teachers'] }},
+                            {{ max(0, $stats['total_users'] - $stats['total_students'] - $stats['total_teachers']) }}
+                        ],
+                        backgroundColor: [
+                            'rgb(59, 130, 246)',
+                            'rgb(168, 85, 247)',
+                            'rgb(156, 163, 175)'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Chart 2: Aktivitas (Bar Chart)
+        const ctxActivity = document.getElementById('adminActivityChart');
+        if (ctxActivity) {
+            new Chart(ctxActivity, {
+                type: 'bar',
+                data: {
+                    labels: ['Bank Soal', 'Soal', 'Ujian Aktif', 'Sesi Berjalan'],
+                    datasets: [{
+                        label: 'Jumlah',
+                        data: [
+                            {{ $stats['total_question_banks'] }},
+                            {{ $stats['total_questions'] }},
+                            {{ $stats['active_exams'] }},
+                            {{ $stats['ongoing_attempts'] }}
+                        ],
+                        backgroundColor: 'rgba(249, 115, 22, 0.2)',
+                        borderColor: 'rgb(249, 115, 22)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    });
+</script>
+@endpush

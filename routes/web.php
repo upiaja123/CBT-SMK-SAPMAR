@@ -133,6 +133,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Phase 3.1: Presence & Integrity Foundation
     Route::post('exams/{exam}/attempts/{attempt}/heartbeat', [\App\Http\Controllers\ExamAttemptController::class, 'heartbeat'])->name('exams.attempts.heartbeat');
     Route::post('exams/{exam}/attempts/{attempt}/integrity-events', [\App\Http\Controllers\ExamAttemptController::class, 'storeIntegrityEvent'])->name('exams.attempts.integrity-events.store');
+    Route::get('monitoring', [\App\Http\Controllers\ExamMonitoringController::class, 'list'])->name('exams.monitoring.list');
     Route::get('exams/{exam}/monitoring', [\App\Http\Controllers\ExamMonitoringController::class, 'index'])->name('exams.monitoring.index');
 
     // Phase 3.3A: Proctor Assignment
@@ -149,6 +150,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/exams/{exam}/attempts/{attempt}/integrity-events', [\App\Http\Controllers\IntegrityReviewController::class, 'events'])->name('exams.attempts.review.events');
     Route::post('/exams/{exam}/attempts/{attempt}/review/state', [\App\Http\Controllers\IntegrityReviewController::class, 'updateState'])->name('exams.attempts.review.state');
     Route::post('/exams/{exam}/attempts/{attempt}/review/notes', [\App\Http\Controllers\IntegrityReviewController::class, 'storeNote'])->name('exams.attempts.review.notes');
+    Route::post('/exams/{exam}/attempts/{attempt}/unlock-review', [\App\Http\Controllers\ExamMonitoringController::class, 'unlockFromReview'])->name('exams.attempts.unlock-review');
+    Route::post('/exams/{exam}/attempts/{attempt}/reopen-review', [\App\Http\Controllers\ExamMonitoringController::class, 'reopenFromReview'])->name('exams.attempts.reopen-review');
 
     // System Administration
     Route::prefix('system')->name('system.')->group(function () {

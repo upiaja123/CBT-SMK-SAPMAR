@@ -411,6 +411,52 @@
                 isSubmitting: false,
                 errorMessage: '',
                 form: defaultForm,
+                draftKey: `exam_draft_${existingExam ? existingExam.id : 'new'}`,
+
+                init() {
+                    this.loadDraft();
+                    this.$watch('form', () => this.saveDraft(), { deep: true });
+                    this.$watch('form.start_at', (value) => this.calculateEndAt());
+                    this.$watch('form.duration', (value) => this.calculateEndAt());
+                },
+
+                calculateEndAt() {
+                    if (this.form.start_at && this.form.duration) {
+                        let startDate = new Date(this.form.start_at);
+                        if (!isNaN(startDate.getTime())) {
+                            startDate.setMinutes(startDate.getMinutes() + parseInt(this.form.duration));
+                            // Format back to YYYY-MM-DDTHH:MM for datetime-local (accounting for local timezone)
+                            let tzOffset = startDate.getTimezoneOffset() * 60000;
+                            let localISOTime = (new Date(startDate.getTime() - tzOffset)).toISOString().slice(0, 16);
+                            this.form.end_at = localISOTime;
+                        }
+                    }
+                },
+
+                saveDraft() {
+                    if (this.isSubmitting) return;
+                    localStorage.setItem(this.draftKey, JSON.stringify(this.form));
+                },
+
+                loadDraft() {
+                    const saved = localStorage.getItem(this.draftKey);
+                    if (saved) {
+                        try {
+                            const draft = JSON.parse(saved);
+                            if (confirm('Terdapat data pembuatan ujian yang belum tersimpan dari sesi sebelumnya. Apakah Anda ingin mengembalikannya?')) {
+                                this.form = draft;
+                            } else {
+                                this.clearDraft();
+                            }
+                        } catch (e) {
+                            this.clearDraft();
+                        }
+                    }
+                },
+
+                clearDraft() {
+                    localStorage.removeItem(this.draftKey);
+                },
 
                 get filteredStudents() {
                     const s = this.studentSearch.toLowerCase();
@@ -561,6 +607,7 @@
                         }
 
                         // Redirect to success
+                        this.clearDraft();
                         window.location.href = `/exams/${examId}`;
                         
                     } catch (error) {

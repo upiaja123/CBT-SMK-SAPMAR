@@ -38,8 +38,8 @@
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center mb-8">
                         <p class="text-sm text-blue-600 font-bold tracking-widest uppercase mb-2">Status Penilaian</p>
                         
-                        @if(!is_null($exam->results_published_at))
-                            <p class="text-gray-600 mb-4">Nilai Akhir Anda</p>
+                        @if(!is_null($exam->results_published_at) || auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('guru'))
+                            <p class="text-gray-600 mb-4">Nilai Akhir {{ auth()->user()->hasRole('siswa') ? 'Anda' : 'Siswa' }}</p>
                             
                             @php
                                 $maxScore = $attempt->max_total_score > 0 ? $attempt->max_total_score : 1;
@@ -74,9 +74,9 @@
                         @endif
                     </div>
 
-                    @if(!is_null($exam->results_published_at))
+                    @if(!is_null($exam->results_published_at) || auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('guru'))
                         <div class="mb-8">
-                            <h4 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Detail Jawaban Anda</h4>
+                            <h4 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Detail Jawaban {{ auth()->user()->hasRole('siswa') ? 'Anda' : $attempt->student->user->name }}</h4>
                             <div class="space-y-6">
                                 @foreach($attempt->questionSnapshots as $index => $snapshot)
                                     @php
@@ -96,13 +96,20 @@
                                             {!! $snapshot->content !!}
                                         </div>
                                         <div>
-                                            <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Jawaban Anda:</p>
+                                            <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Jawaban {{ auth()->user()->hasRole('siswa') ? 'Anda' : 'Siswa' }}:</p>
                                             @if($snapshot->question_type === 'multiple_choice' || $snapshot->question_type === 'multiple_select')
                                                 <div class="space-y-2">
                                                     @foreach($snapshot->optionSnapshots as $option)
                                                         @php
-                                                            $userAnswered = $answer && is_array($answer->answer) && in_array($option->id, $answer->answer);
-                                                            $isKey = current(array_filter($snapshot->scoring_metadata['options'] ?? [], fn($o) => $o['id'] == $option->id))['is_correct'] ?? false;
+                                                            $userAnswered = false;
+                                                            if ($answer && is_array($answer->answer)) {
+                                                                if ($snapshot->question_type === 'multiple_choice' && isset($answer->answer['option_id'])) {
+                                                                    $userAnswered = $answer->answer['option_id'] == $option->id;
+                                                                } elseif ($snapshot->question_type === 'multiple_select' && isset($answer->answer['option_ids'])) {
+                                                                    $userAnswered = in_array($option->id, $answer->answer['option_ids']);
+                                                                }
+                                                            }
+                                                            $isKey = $option->is_correct;
                                                         @endphp
                                                         <div class="flex items-center gap-3 p-2 rounded {{ $userAnswered ? ($isKey ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200') : ($isKey ? 'bg-blue-50 border border-blue-200 border-dashed' : 'bg-gray-50') }}">
                                                             <div class="w-5 h-5 flex items-center justify-center rounded-full border {{ $userAnswered ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300' }}">

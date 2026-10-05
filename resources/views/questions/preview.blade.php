@@ -60,7 +60,7 @@
                 <div class="p-6 md:p-8">
                     <!-- Question Content -->
                     <div class="prose max-w-none text-gray-900 text-lg mb-4">
-                        {!! nl2br(e($question->currentVersion->content)) !!}
+                        {!! $question->currentVersion->content !!}
                     </div>
 
                     <!-- Question Media -->
@@ -93,8 +93,8 @@
                                         <div class="flex items-center h-5">
                                             <input type="radio" name="preview_answer" class="focus:ring-sapta-500 h-5 w-5 text-sapta-600 border-gray-300">
                                         </div>
-                                        <div class="ml-3 text-sm">
-                                            <span class="text-gray-900 text-base">{!! nl2br(e($option->content)) !!}</span>
+                                        <div class="ml-3 text-sm w-full">
+                                            <span class="text-gray-900 text-base block prose">{!! $option->content !!}</span>
                                             
                                             <!-- Teacher Info: Show correct answer -->
                                             @if($option->is_correct)
@@ -115,8 +115,8 @@
                                         <div class="flex items-center h-5">
                                             <input type="checkbox" name="preview_answer[]" class="focus:ring-sapta-500 h-5 w-5 text-sapta-600 border-gray-300 rounded">
                                         </div>
-                                        <div class="ml-3 text-sm">
-                                            <span class="text-gray-900 text-base">{!! nl2br(e($option->content)) !!}</span>
+                                        <div class="ml-3 text-sm w-full">
+                                            <span class="text-gray-900 text-base block prose">{!! $option->content !!}</span>
                                             @if($option->is_correct)
                                                 <div class="mt-1 text-xs text-green-600 font-semibold flex items-center">
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
