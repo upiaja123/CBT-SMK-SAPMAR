@@ -5,12 +5,14 @@
                 {{ __('Daftar Ujian (Exams)') }}
             </h2>
             @can('create', App\Models\Exam::class)
+@unless(auth()->user()->hasRole('kurikulum'))
             <div class="mt-4 sm:mt-0">
                 <a href="{{ route('exams.create') }}" class="inline-flex items-center px-4 py-2 bg-sapta-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-sapta-700 focus:bg-sapta-700 active:bg-sapta-900 focus:outline-none focus:ring-2 focus:ring-sapta-500 transition ease-in-out duration-150">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Buat Ujian Baru
                 </a>
             </div>
+@endunless
             @endcan
         </div>
     </x-slot>
@@ -74,7 +76,7 @@
                                                             <a href="{{ route('exams.edit', $exam) }}" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-yellow-500 hover:bg-yellow-600 shadow-sm">Edit</a>
                                                         @endcan
                                                         @can('forceDelete', $exam)
-                                                        <form action="{{ route('exams.force_destroy', $exam) }}" method="POST" onsubmit="return confirm('⚠️ HAPUS PERMANEN?\n\nUjian \"{{ addslashes($exam->title) }}\" beserta semua data peserta dan jawaban akan dihapus selamanya!\n\nLanjutkan?')">
+                                                        <form action="{{ route('exams.force_destroy', $exam) }}" method="POST" onsubmit="return confirm('âš ï¸ HAPUS PERMANEN?\n\nUjian \"{{ addslashes($exam->title) }}\" beserta semua data peserta dan jawaban akan dihapus selamanya!\n\nLanjutkan?')">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 shadow-sm">Hapus</button>
@@ -128,11 +130,13 @@
                             <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada Ujian</h3>
                             <p class="mt-1 text-sm text-gray-500">Buat ujian baru melalui Exam Builder.</p>
                             @can('create', App\Models\Exam::class)
+@unless(auth()->user()->hasRole('kurikulum'))
                             <div class="mt-6">
                                 <a href="{{ route('exams.create') }}" class="inline-flex items-center px-4 py-2 bg-sapta-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase hover:bg-sapta-700">
                                     Buat Ujian Baru
                                 </a>
                             </div>
+@endunless
                             @endcan
                         </div>
                     @endif

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>{{ $exam->title }} - CBT Sapta Marga</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- KaTeX: Render formula matematika --}}
+    @include('layouts.partials.math-renderer')
     <style>
         .prose img {
             max-height: 20rem; /* max-h-80 = 320px */
@@ -75,7 +77,7 @@
                 
                 <div class="p-4 sm:p-6">
                     <!-- Question Content -->
-                    <div class="prose max-w-none text-gray-800 mb-4" x-html="currentQuestion?.content"></div>
+                    <div class="prose max-w-none text-gray-800 mb-4 math-render-area" x-html="currentQuestion?.content"></div>
 
                     <!-- Media Rendering -->
                     <template x-if="currentQuestion && currentQuestion.media && currentQuestion.media.length > 0">
@@ -116,7 +118,7 @@
                                            @change="handleAnswerChange(currentQuestion.id, option.id)">
                                 </div>
                                 <div class="ml-3 text-gray-900 text-sm w-full">
-                                    <div x-show="option.content !== null && option.content !== ''" x-html="option.content" class="prose max-w-none text-base"></div>
+                                    <div x-show="option.content !== null && option.content !== ''" x-html="option.content" class="prose max-w-none text-base math-render-area"></div>
                                     <template x-if="option.media && option.media.length > 0">
                                         <div class="mt-2 space-y-2">
                                             <template x-for="m in option.media" :key="m.id">
@@ -167,7 +169,7 @@
                                         <template x-for="(item, index) in currentQuestion.left_items" :key="'l'+index">
                                             <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between relative select-none"
                                                  :class="{'ring-2 ring-brand-500': isLeftSelected(item)}">
-                                                <span x-text="item" class="text-sm font-medium text-gray-800 pr-4"></span>
+                                                <span x-html="item" class="text-sm font-medium text-gray-800 pr-4 math-render-area"></span>
                                                 <div class="w-5 h-5 rounded-full bg-white border-2 border-brand-500 cursor-pointer flex-shrink-0"
                                                      @mousedown.stop.prevent="startDrawing($event, item, 'left')"
                                                      @touchstart.stop.prevent="startDrawing($event, item, 'left')"
@@ -184,7 +186,7 @@
                                          @touchend.stop.prevent="finishDrawing(item, 'right', $event)">
                                         <div class="w-5 h-5 rounded-full bg-white border-2 border-brand-500 flex-shrink-0"
                                              :id="'right-node-' + index"></div>
-                                        <span x-text="item" class="text-sm font-medium text-gray-800 text-right pl-4"></span>
+                                        <span x-html="item" class="text-sm font-medium text-gray-800 text-right pl-4 math-render-area"></span>
                                     </div>
                                 </template>
                             </div>
@@ -495,6 +497,15 @@
                         }
                         
                         this.isLoading = false;
+
+                        // Render matematika pada soal awal setelah data siap
+                        this.$nextTick(() => {
+                            setTimeout(() => {
+                                if (window.renderAllMath) {
+                                    window.renderAllMath();
+                                }
+                            }, 50);
+                        });
                         
                         // Start background sync interval just in case
                         this.syncInterval = setInterval(() => {
@@ -509,6 +520,16 @@
                         }, 15000); // 15 seconds
                         
                         this.setupRealtime();
+                        
+                        this.$watch('currentQuestionIndex', () => {
+                            this.$nextTick(() => {
+                                setTimeout(() => {
+                                    if (window.renderAllMath) {
+                                        window.renderAllMath();
+                                    }
+                                }, 50);
+                            });
+                        });
 
                     } catch (e) {
                         console.error('Failed to load exam session', e);

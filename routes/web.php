@@ -25,7 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Master Data Routes
-    Route::prefix('master')->name('master.')->group(function () {
+    Route::prefix('master')->name('master.')->middleware('not.superadmin')->group(function () {
         Route::resource('academic-years', \App\Http\Controllers\Master\AcademicYearController::class)->except(['create', 'edit', 'show']);
         Route::resource('majors', \App\Http\Controllers\Master\MajorController::class)->except(['create', 'edit', 'show']);
         Route::resource('classes', \App\Http\Controllers\Master\SchoolClassController::class)->except(['create', 'edit', 'show']);
@@ -34,11 +34,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Users (Teachers & Students) Routes
     Route::prefix('users')->name('users.')->group(function () {
-        Route::get('verifications', [\App\Http\Controllers\UserVerificationController::class, 'index'])->name('verifications.index');
-        Route::put('verifications/{user}', [\App\Http\Controllers\UserVerificationController::class, 'update'])->name('verifications.update');
-        Route::delete('verifications/{user}', [\App\Http\Controllers\UserVerificationController::class, 'destroy'])->name('verifications.destroy');
+        Route::get('verifications', [\App\Http\Controllers\UserVerificationController::class, 'index'])->middleware('deny.role:kurikulum')->name('verifications.index');
+        Route::put('verifications/{user}', [\App\Http\Controllers\UserVerificationController::class, 'update'])->middleware('deny.role:kurikulum')->name('verifications.update');
+        Route::delete('verifications/{user}', [\App\Http\Controllers\UserVerificationController::class, 'destroy'])->middleware('deny.role:kurikulum')->name('verifications.destroy');
 
-        Route::resource('staff', \App\Http\Controllers\User\StaffController::class)->except(['create', 'edit', 'show']);
+        Route::resource('staff', \App\Http\Controllers\User\StaffController::class)->except(['create', 'edit', 'show'])->middleware('deny.role:kurikulum');
         Route::resource('teachers', \App\Http\Controllers\User\TeacherController::class)->except(['create', 'edit', 'show']);
 
         Route::get('students/import', [\App\Http\Controllers\User\StudentImportController::class, 'show'])->name('students.import.show');
@@ -64,24 +64,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]));
     })->name('api.students.search');
 
-    // Phase 1: Question Bank & Exams
-    Route::resource('question_banks', \App\Http\Controllers\QuestionBankController::class);
+    // Phase 1: Question Bank & Exams (tidak dapat diakses Super Admin)
+    Route::middleware('not.superadmin')->group(function () {
+    Route::get('question_banks/create', [\App\Http\Controllers\QuestionBankController::class, 'create'])->middleware('deny.role:kurikulum')->name('question_banks.create');
+    Route::post('question_banks', [\App\Http\Controllers\QuestionBankController::class, 'store'])->middleware('deny.role:kurikulum')->name('question_banks.store');
+    Route::resource('question_banks', \App\Http\Controllers\QuestionBankController::class)->except(['create', 'store']);
     Route::delete('question_banks/{question_bank}/force', [\App\Http\Controllers\QuestionBankController::class, 'forceDestroy'])->name('question_banks.force_destroy');
 
     // Questions are nested inside question_banks for creation, but can be updated/deleted independently
-    Route::get('question_banks/{question_bank}/questions/create', [\App\Http\Controllers\QuestionController::class, 'create'])->name('questions.create');
-    Route::post('question_banks/{question_bank}/questions', [\App\Http\Controllers\QuestionController::class, 'store'])->name('questions.store');
-    Route::get('questions/{question}/edit', [\App\Http\Controllers\QuestionController::class, 'edit'])->name('questions.edit');
-    Route::put('questions/{question}', [\App\Http\Controllers\QuestionController::class, 'update'])->name('questions.update');
-    Route::delete('questions/{question}', [\App\Http\Controllers\QuestionController::class, 'destroy'])->name('questions.destroy');
-    Route::delete('questions/{question}/force', [\App\Http\Controllers\QuestionController::class, 'forceDestroy'])->name('questions.force_destroy');
-    Route::post('questions/{question}/publish', [\App\Http\Controllers\QuestionController::class, 'publish'])->name('questions.publish');
-    Route::post('questions/{question}/draft', [\App\Http\Controllers\QuestionController::class, 'draft'])->name('questions.draft');
+    Route::get('question_banks/{question_bank}/questions/create', [\App\Http\Controllers\QuestionController::class, 'create'])->middleware('deny.role:kurikulum')->name('questions.create');
+    Route::post('question_banks/{question_bank}/questions', [\App\Http\Controllers\QuestionController::class, 'store'])->middleware('deny.role:kurikulum')->name('questions.store');
+    Route::get('questions/{question}/edit', [\App\Http\Controllers\QuestionController::class, 'edit'])->middleware('deny.role:kurikulum')->name('questions.edit');
+    Route::put('questions/{question}', [\App\Http\Controllers\QuestionController::class, 'update'])->middleware('deny.role:kurikulum')->name('questions.update');
+    Route::delete('questions/{question}', [\App\Http\Controllers\QuestionController::class, 'destroy'])->middleware('deny.role:kurikulum')->name('questions.destroy');
+    Route::delete('questions/{question}/force', [\App\Http\Controllers\QuestionController::class, 'forceDestroy'])->middleware('deny.role:kurikulum')->name('questions.force_destroy');
+    Route::post('questions/{question}/publish', [\App\Http\Controllers\QuestionController::class, 'publish'])->middleware('deny.role:kurikulum')->name('questions.publish');
+    Route::post('questions/{question}/draft', [\App\Http\Controllers\QuestionController::class, 'draft'])->middleware('deny.role:kurikulum')->name('questions.draft');
     Route::get('questions/{question}/preview', [\App\Http\Controllers\QuestionController::class, 'preview'])->name('questions.preview');
     Route::get('questions/{question}/history', [\App\Http\Controllers\QuestionController::class, 'history'])->name('questions.history');
 
     // Exams
-    Route::resource('exams', \App\Http\Controllers\ExamBuilderController::class);
+    Route::get('exams/create', [\App\Http\Controllers\ExamBuilderController::class, 'create'])->middleware('deny.role:kurikulum')->name('exams.create');
+    Route::post('exams', [\App\Http\Controllers\ExamBuilderController::class, 'store'])->middleware('deny.role:kurikulum')->name('exams.store');
+    Route::resource('exams', \App\Http\Controllers\ExamBuilderController::class)->except(['create', 'store']);
     Route::delete('exams/{exam}/force', [\App\Http\Controllers\ExamBuilderController::class, 'forceDestroy'])->name('exams.force_destroy');
     Route::put('exams/{exam}/participants', [\App\Http\Controllers\ExamBuilderController::class, 'updateParticipants'])->name('exams.updateParticipants');
     Route::put('exams/{exam}/questions', [\App\Http\Controllers\ExamBuilderController::class, 'updateQuestions'])->name('exams.updateQuestions');
@@ -93,9 +98,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('exams/{exam}/participants/{participant}', [\App\Http\Controllers\ExamBuilderController::class, 'removeParticipant'])->name('exams.remove_participant');
 
     // Phase 2.4C: Manual Essay Grading
-    Route::get('exams/{exam}/grading', [\App\Http\Controllers\ManualGradingController::class, 'index'])->name('exams.grading.index');
-    Route::get('exams/{exam}/grading/{attempt}', [\App\Http\Controllers\ManualGradingController::class, 'show'])->name('exams.grading.show');
-    Route::put('exams/{exam}/grading/{attempt}/answers/{participantAnswer}', [\App\Http\Controllers\ManualGradingController::class, 'update'])->name('exams.grading.update');
+    Route::get('exams/{exam}/grading', [\App\Http\Controllers\ManualGradingController::class, 'index'])->middleware('deny.role:kurikulum')->name('exams.grading.index');
+    Route::get('exams/{exam}/grading/{attempt}', [\App\Http\Controllers\ManualGradingController::class, 'show'])->middleware('deny.role:kurikulum')->name('exams.grading.show');
+    Route::put('exams/{exam}/grading/{attempt}/answers/{participantAnswer}', [\App\Http\Controllers\ManualGradingController::class, 'update'])->middleware('deny.role:kurikulum')->name('exams.grading.update');
+    });
 
     // Media (Securely served)
     Route::post('media', [\App\Http\Controllers\MediaController::class, 'store'])->name('media.store');
@@ -115,7 +121,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
     Route::get('exams/{exam}/attempts/{attempt}/result', [\App\Http\Controllers\ExamAttemptController::class, 'result'])->name('exams.attempts.result');
     Route::get('exams/{exam}/results', [\App\Http\Controllers\ExamResultController::class, 'index'])->name('exams.results.index');
-    Route::post('exams/{exam}/results/publish', [\App\Http\Controllers\ExamResultController::class, 'publishResults'])->name('exams.results.publish');
+    Route::post('exams/{exam}/results/publish', [\App\Http\Controllers\ExamResultController::class, 'publishResults'])->middleware(['not.superadmin', 'deny.role:kurikulum'])->name('exams.results.publish');
 
     // Phase 4.1: Analytics
     Route::get('analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
@@ -139,8 +145,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('exams/{exam}/monitoring', [\App\Http\Controllers\ExamMonitoringController::class, 'index'])->name('exams.monitoring.index');
 
     // Phase 3.3A: Proctor Assignment
-    Route::post('exams/{exam}/proctors', [\App\Http\Controllers\ExamProctorController::class, 'store'])->name('exams.proctors.store');
-    Route::delete('exams/{exam}/proctors/{proctorId}', [\App\Http\Controllers\ExamProctorController::class, 'destroy'])->name('exams.proctors.destroy');
+    Route::post('exams/{exam}/proctors', [\App\Http\Controllers\ExamProctorController::class, 'store'])->middleware('not.superadmin')->name('exams.proctors.store');
+    Route::delete('exams/{exam}/proctors/{proctorId}', [\App\Http\Controllers\ExamProctorController::class, 'destroy'])->middleware('not.superadmin')->name('exams.proctors.destroy');
 
     // Phase 3.3B: Proctor Control Actions
     Route::post('exams/{exam}/attempts/{attempt}/extra-time', [\App\Http\Controllers\ExamProctorControlController::class, 'addExtraTime'])->name('exams.attempts.extra-time');

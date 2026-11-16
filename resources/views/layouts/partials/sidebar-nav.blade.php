@@ -14,6 +14,7 @@
     </a>
 
     @if ($role === 'super_admin' || $role === 'kurikulum')
+        @if ($role !== 'super_admin')
         <div class="pt-3 pb-1 px-3 text-[10px] font-bold text-sapta-300 uppercase tracking-wider">Master Data</div>
 
         <a href="{{ route('master.academic-years.index') }}"
@@ -36,24 +37,29 @@
             <span class="w-1.5 h-1.5 rounded-full bg-sapta-400"></span>
             Mata Pelajaran
         </a>
+        @endif
 
         <div class="pt-3 pb-1 px-3 text-[10px] font-bold text-sapta-300 uppercase tracking-wider">Civitas & Pengguna</div>
 
+        @unless($role === 'kurikulum')
         <a href="{{ route('users.verifications.index') }}"
             class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition {{ request()->routeIs('users.verifications.*') ? 'bg-white/15 text-white font-semibold' : 'text-sapta-100 hover:bg-white/10 hover:text-white' }}">
             <span class="w-1.5 h-1.5 rounded-full bg-sapta-400"></span>
             Verifikasi Akun Baru
         </a>
+        @endunless
         <a href="{{ route('users.teachers.index') }}"
             class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition {{ request()->routeIs('users.teachers.*') ? 'bg-white/15 text-white font-semibold' : 'text-sapta-100 hover:bg-white/10 hover:text-white' }}">
             <span class="w-1.5 h-1.5 rounded-full bg-sapta-400"></span>
             Data Guru
         </a>
+        @unless($role === 'kurikulum')
         <a href="{{ route('users.staff.index') }}"
             class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition {{ request()->routeIs('users.staff.*') ? 'bg-white/15 text-white font-semibold' : 'text-sapta-100 hover:bg-white/10 hover:text-white' }}">
             <span class="w-1.5 h-1.5 rounded-full bg-sapta-400"></span>
             Manajemen Staf
         </a>
+        @endunless
         <a href="{{ route('users.students.index') }}"
             class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition {{ request()->routeIs('users.students.*') ? 'bg-white/15 text-white font-semibold' : 'text-sapta-100 hover:bg-white/10 hover:text-white' }}">
             <span class="w-1.5 h-1.5 rounded-full bg-sapta-400"></span>
@@ -85,6 +91,7 @@
         @endif
     @endif
 
+    @if ($role !== 'super_admin')
     @canany(['question_banks.view', 'exams.create', 'exams.update', 'exams.monitor'])
         <div class="pt-3 pb-1 px-3 text-[10px] font-bold text-sapta-300 uppercase tracking-wider">Ujian & Penilaian</div>
 
@@ -111,8 +118,10 @@
         @endcanany
 
     @endcanany
+    @endif
 
     @if ($role === 'super_admin' || $role === 'proktor')
+
         <div class="pt-3 pb-1 px-3 text-[10px] font-bold text-sapta-300 uppercase tracking-wider">Integritas Ujian</div>
         
         <a href="{{ route('exams.monitoring.list') }}"

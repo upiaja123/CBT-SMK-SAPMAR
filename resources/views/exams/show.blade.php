@@ -213,8 +213,8 @@
                                             <span class="font-bold text-gray-700">Soal #{{ $eq->order }}</span>
                                             <span class="text-xs text-gray-500 font-medium">Bobot: {{ $eq->weight }}</span>
                                         </div>
-                                        <div class="text-sm text-gray-800 line-clamp-3">
-                                            {!! strip_tags($eq->questionVersion->content) !!}
+                                        <div class="text-sm text-gray-800 line-clamp-3 math-render-area prose prose-sm max-w-none">
+                                            {!! $eq->questionVersion->content !!}
                                         </div>
                                         <div class="text-xs text-gray-400 mt-2">
                                             Versi: {{ $eq->questionVersion->version }} | Tipe: {{ Str::title(str_replace('_', ' ', $eq->questionVersion->type)) }}

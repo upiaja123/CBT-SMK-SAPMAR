@@ -90,7 +90,7 @@
                     <p class="text-sm text-gray-500 text-center py-4">Belum ada ujian dibuat.</p>
                 @endforelse
             </div>
-            @if(count($stats['recent_exams']) > 0)
+            @if(count($stats['recent_exams']) > 0 && !auth()->user()->hasAnyRole(['super_admin', 'kurikulum']))
                 <div class="mt-4 text-center">
                     <a href="{{ route('exams.index') }}" class="text-sm text-sapta-600 font-medium hover:underline">Lihat Semua Ujian &rarr;</a>
                 </div>
@@ -100,6 +100,7 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Aksi Cepat</h2>
             <div class="grid grid-cols-2 gap-3">
+                @unless(auth()->user()->hasAnyRole(['super_admin', 'kurikulum']))
                 <a href="{{ route('exams.create') }}" class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-xl hover:border-sapta-500 hover:bg-sapta-50 transition text-center group">
                     <div class="w-10 h-10 rounded-full bg-sapta-100 flex items-center justify-center text-sapta-600 mb-2 group-hover:scale-110 transition">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -112,6 +113,7 @@
                     </div>
                     <span class="text-sm font-medium text-gray-700">Buat Bank Soal</span>
                 </a>
+                @endunless
                 <a href="{{ route('users.students.index') }}" class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group">
                     <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mb-2 group-hover:scale-110 transition">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>

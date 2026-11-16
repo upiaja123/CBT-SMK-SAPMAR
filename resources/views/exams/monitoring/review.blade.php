@@ -268,6 +268,19 @@
                                 }
                             });
                     }
+
+                    // AJAX POLLING FALLBACK (Otomatis mengambil data tiap 10 detik jika WebSocket mati)
+                    setInterval(() => {
+                        const isConnected = window.Echo && 
+                                            window.Echo.connector && 
+                                            window.Echo.connector.pusher && 
+                                            window.Echo.connector.pusher.connection &&
+                                            window.Echo.connector.pusher.connection.state === 'connected';
+                        
+                        if (!isConnected && this.currentPage === 1) {
+                            this.fetchEvents(1);
+                        }
+                    }, 10000);
                 },
 
                 async fetchEvents(page = 1) {

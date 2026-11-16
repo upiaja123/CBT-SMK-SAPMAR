@@ -5,12 +5,14 @@
                 {{ __('Bank Soal') }}
             </h2>
             @can('create', App\Models\QuestionBank::class)
+@unless(auth()->user()->hasRole('kurikulum'))
             <div class="mt-4 sm:mt-0">
                 <a href="{{ route('question_banks.create') }}" class="inline-flex items-center px-4 py-2 bg-sapta-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-sapta-700 focus:bg-sapta-700 active:bg-sapta-900 focus:outline-none focus:ring-2 focus:ring-sapta-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Tambah Bank Soal
                 </a>
             </div>
+@endunless
             @endcan
         </div>
     </x-slot>
@@ -77,7 +79,7 @@
                                     {{ $bank->questions_count }} Soal
                                 </div>
                                 @can('forceDelete', $bank)
-                                <form action="{{ route('question_banks.force_destroy', $bank) }}" method="POST" onsubmit="return confirm('⚠️ HAPUS PERMANEN?\n\nBank soal \"{{ addslashes($bank->name) }}\" dan SEMUA soal di dalamnya akan dihapus untuk selamanya dan tidak dapat dikembalikan!\n\nLanjutkan?')">
+                                <form action="{{ route('question_banks.force_destroy', $bank) }}" method="POST" onsubmit="return confirm('âš ï¸ HAPUS PERMANEN?\n\nBank soal \"{{ addslashes($bank->name) }}\" dan SEMUA soal di dalamnya akan dihapus untuk selamanya dan tidak dapat dikembalikan!\n\nLanjutkan?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-600 border border-transparent rounded text-xs text-white hover:bg-red-700" title="Hapus Permanen (Super Admin)">

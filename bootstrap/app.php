@@ -21,6 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetSecurityHeaders::class,
         ]);
 
+        $middleware->alias([
+            'not.superadmin' => \App\Http\Middleware\DenySuperAdmin::class,
+            'deny.role' => \App\Http\Middleware\DenyRole::class,
+        ]);
+
         $middleware->preventRequestsDuringMaintenance(except: [
             '/',
             'login',

@@ -59,7 +59,7 @@
 
                 <div class="p-6 md:p-8">
                     <!-- Question Content -->
-                    <div class="prose max-w-none text-gray-900 text-lg mb-4">
+                    <div class="prose max-w-none text-gray-900 text-lg mb-4 math-render-area">
                         {!! $question->currentVersion->content !!}
                     </div>
 
@@ -94,7 +94,7 @@
                                             <input type="radio" name="preview_answer" class="focus:ring-sapta-500 h-5 w-5 text-sapta-600 border-gray-300">
                                         </div>
                                         <div class="ml-3 text-sm w-full">
-                                            <span class="text-gray-900 text-base block prose">{!! $option->content !!}</span>
+                                            <span class="text-gray-900 text-base block prose math-render-area">{!! $option->content !!}</span>
                                             
                                             <!-- Teacher Info: Show correct answer -->
                                             @if($option->is_correct)
@@ -116,7 +116,7 @@
                                             <input type="checkbox" name="preview_answer[]" class="focus:ring-sapta-500 h-5 w-5 text-sapta-600 border-gray-300 rounded">
                                         </div>
                                         <div class="ml-3 text-sm w-full">
-                                            <span class="text-gray-900 text-base block prose">{!! $option->content !!}</span>
+                                            <span class="text-gray-900 text-base block prose math-render-area">{!! $option->content !!}</span>
                                             @if($option->is_correct)
                                                 <div class="mt-1 text-xs text-green-600 font-semibold flex items-center">
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -173,7 +173,7 @@
                                                 <template x-for="(item, index) in left_items" :key="'l'+index">
                                                     <div class="p-4 bg-white border border-gray-200 rounded-lg flex items-center justify-between relative select-none"
                                                          :class="{'ring-2 ring-brand-500': isLeftSelected(item)}">
-                                                        <span x-text="item" class="text-sm font-medium text-gray-800 pr-4"></span>
+                                                        <span x-html="item" class="text-sm font-medium text-gray-800 pr-4 math-render-area"></span>
                                                         <div class="w-5 h-5 rounded-full bg-gray-50 border-2 border-brand-500 cursor-pointer flex-shrink-0"
                                                              @mousedown.stop.prevent="startDrawing($event, item, 'left')"
                                                              @touchstart.stop.prevent="startDrawing($event, item, 'left')"
@@ -191,7 +191,7 @@
                                                          @touchend.stop.prevent="finishDrawing(item, 'right', $event)">
                                                         <div class="w-5 h-5 rounded-full bg-gray-50 border-2 border-brand-500 flex-shrink-0"
                                                              :id="'right-node-' + index"></div>
-                                                        <span x-text="item" class="text-sm font-medium text-gray-800 text-right pl-4"></span>
+                                                        <span x-html="item" class="text-sm font-medium text-gray-800 text-right pl-4 math-render-area"></span>
                                                     </div>
                                                 </template>
                                             </div>

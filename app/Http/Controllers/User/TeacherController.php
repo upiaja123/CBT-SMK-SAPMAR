@@ -27,6 +27,7 @@ class TeacherController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $this->authorize('teachers.manage');
+        abort_if(auth()->user()->hasRole('kurikulum'), 403, 'Kurikulum tidak dapat menambah data guru.');
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', 'unique:users,username'],
@@ -99,7 +100,7 @@ class TeacherController extends Controller
                 'email' => $validated['email'],
             ];
 
-            if (!empty($validated['password'])) {
+            if (!empty($validated['password']) && !auth()->user()->hasRole('kurikulum')) {
                 $userUpdateData['password'] = Hash::make($validated['password']);
             }
 
@@ -128,6 +129,7 @@ class TeacherController extends Controller
     public function destroy(Teacher $teacher): RedirectResponse
     {
         $this->authorize('teachers.manage');
+        abort_if(auth()->user()->hasRole('kurikulum'), 403, 'Kurikulum tidak dapat menghapus data guru.');
 
         DB::transaction(function () use ($teacher) {
             $user = $teacher->user;

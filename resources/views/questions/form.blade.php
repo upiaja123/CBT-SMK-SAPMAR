@@ -1,4 +1,154 @@
 <x-app-layout>
+    @push('styles')
+    <style>
+        /* Placeholder untuk contenteditable */
+        .math-editor:empty:before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+            display: block;
+        }
+        /* Styling rumus yang disisipkan */
+        .math-editor .katex-rendered,
+        .math-editor-opt .katex-rendered {
+            display: inline-block;
+            vertical-align: middle;
+            cursor: pointer;
+            margin: 0 2px;
+            padding: 1px 3px;
+            border-radius: 3px;
+            transition: background 0.15s;
+        }
+        .math-editor .katex-rendered:hover,
+        .math-editor-opt .katex-rendered:hover {
+            background: #ede9fe;
+            outline: 1px dashed #6366f1;
+        }
+        /* Style editor mirip textarea */
+        .math-editor {
+            min-height: 120px;
+            outline: none;
+            line-height: 1.7;
+            word-break: break-word;
+        }
+        .math-editor-opt {
+            min-height: 52px;
+            outline: none;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+        .math-editor-opt:empty:before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+            display: block;
+        }
+
+        /* ─── MathQuill Popup Editor ─────────────────── */
+        #mq-popup-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 9998;
+            display: none;
+        }
+        #mq-popup {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            width: 520px;
+            max-width: 95vw;
+            display: none;
+        }
+        #mq-popup .mq-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #mq-popup .mq-header h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        #mq-popup .mq-body {
+            padding: 20px;
+        }
+        #mq-popup .mq-field-wrap {
+            border: 2px solid #6366f1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            min-height: 60px;
+            background: #fafafa;
+        }
+        #mq-popup .mq-field-wrap .mq-editable-field {
+            font-size: 22px;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        #mq-popup .mq-preview-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 12px;
+            margin-bottom: 4px;
+        }
+        #mq-popup .mq-preview-box {
+            padding: 10px 14px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            min-height: 36px;
+            font-size: 18px;
+        }
+        #mq-popup .mq-footer {
+            padding: 14px 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        #mq-popup .mq-footer button {
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        #mq-popup .mq-btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        #mq-popup .mq-btn-cancel:hover { background: #e5e7eb; }
+        #mq-popup .mq-btn-insert {
+            background: #4f46e5;
+            color: white;
+            border: 1px solid #4338ca;
+        }
+        #mq-popup .mq-btn-insert:hover { background: #4338ca; }
+        #mq-popup .mq-shortcuts {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        #mq-popup .mq-shortcuts button {
+            padding: 3px 8px;
+            font-size: 14px;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #mq-popup .mq-shortcuts button:hover { background: #e0e7ff; border-color: #818cf8; }
+    </style>
+    @endpush
+
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-sapta-900 leading-tight">
@@ -63,38 +213,82 @@
                             <x-input-label for="content" :value="__('Pertanyaan')" class="text-base" />
                             <p class="text-xs text-gray-500 mb-2">Gunakan editor ini untuk mengetik teks soal. Klik tombol <strong>∑ Rumus</strong> untuk menyisipkan formula matematika.</p>
                             
-                            <!-- Math Toolbar for Question -->
-                            <div class="flex flex-wrap gap-1 mb-2 p-2 bg-blue-50 border border-blue-200 rounded-md" id="math-toolbar-question">
-                                <span class="text-xs text-blue-700 font-medium self-center mr-1">∑ Sisipkan:</span>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\frac{a}{b}" title="Pecahan">a/b</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="x^{2}" title="Pangkat 2">x²</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="x^{n}" title="Pangkat n">xⁿ</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\sqrt{x}" title="Akar">√x</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\sqrt[n]{x}" title="Akar ke-n">ⁿ√x</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\sum_{i=1}^{n}" title="Sigma">Σ</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\int_{a}^{b}" title="Integral">∫</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\lim_{x \to \infty}" title="Limit">lim</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\pi" title="Pi">π</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\alpha" title="Alpha">α</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\beta" title="Beta">β</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\theta" title="Theta">θ</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\infty" title="Tak Hingga">∞</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\leq" title="Kurang dari sama dengan">≤</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\geq" title="Lebih dari sama dengan">≥</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\neq" title="Tidak sama dengan">≠</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\times" title="Kali">×</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\div" title="Bagi">÷</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\pm" title="Plus Minus">±</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\sin(x)" title="Sinus">sin</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\cos(x)" title="Cosinus">cos</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\tan(x)" title="Tangen">tan</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\log_{10}(x)" title="Log">log</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\ln(x)" title="Ln">ln</button>
-                                <button type="button" class="math-btn px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\begin{pmatrix} a & b \\\\ c & d \end{pmatrix}" title="Matriks 2x2">[ ]</button>
-                                <span class="text-xs text-blue-500 self-center ml-1">Tulis formula di dalam $...$</span>
+                            <!-- Comprehensive Math Toolbar -->
+                            <div class="mb-2 p-2 bg-blue-50 border border-blue-200 rounded-md text-xs" id="math-toolbar-question">
+                                <div class="font-semibold text-blue-800 mb-1">Papan Simbol Matematika (Klik untuk menyisipkan)</div>
+                                
+                                <div class="space-y-2">
+                                    <!-- Operator Dasar -->
+                                    <div class="flex flex-wrap gap-1">
+                                        <span class="text-blue-600 font-medium w-16 inline-block">Operasi:</span>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="+" title="Tambah">+</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="-" title="Kurang">-</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\times" title="Kali">×</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\div" title="Bagi">÷</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\pm" title="Plus Minus">±</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="=" title="Sama dengan">=</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\neq" title="Tidak sama dengan">≠</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\approx" title="Hampir sama">≈</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="<" title="Kurang dari"><</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula=">" title="Lebih dari">></button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\leq" title="Kurang dari sama dengan">≤</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\geq" title="Lebih dari sama dengan">≥</button>
+                                    </div>
+                                    
+                                    <!-- Pecahan, Pangkat & Akar -->
+                                    <div class="flex flex-wrap gap-1">
+                                        <span class="text-blue-600 font-medium w-16 inline-block">Pangkat:</span>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\frac{a}{b}" title="Pecahan">a/b</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="x^{2}" title="Pangkat 2">x²</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="x^{n}" title="Pangkat n">xⁿ</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="x_{n}" title="Subskrip">xₙ</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\sqrt{x}" title="Akar Kuadrat">√x</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\sqrt[n]{x}" title="Akar pangkat n">ⁿ√x</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="|" title="Mutlak">|x|</button>
+                                    </div>
+
+                                    <!-- Kalkulus & Trigonometri -->
+                                    <div class="flex flex-wrap gap-1">
+                                        <span class="text-blue-600 font-medium w-16 inline-block">Kalkulus:</span>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\sum_{i=1}^{n}" title="Sigma">Σ</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\prod_{i=1}^{n}" title="Pi Besar">∏</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\int_{a}^{b}" title="Integral">∫</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\lim_{x \to \infty}" title="Limit">lim</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\sin(x)" title="Sinus">sin</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\cos(x)" title="Cosinus">cos</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\tan(x)" title="Tangen">tan</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\log_{10}(x)" title="Logaritma">log</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\ln(x)" title="Logaritma Natural">ln</button>
+                                    </div>
+
+                                    <!-- Geometri & Yunani -->
+                                    <div class="flex flex-wrap gap-1">
+                                        <span class="text-blue-600 font-medium w-16 inline-block">Simbol:</span>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\pi" title="Pi">π</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\alpha" title="Alpha">α</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\beta" title="Beta">β</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\gamma" title="Gamma">γ</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\theta" title="Theta">θ</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\Delta" title="Delta">Δ</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\infty" title="Tak Hingga">∞</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\angle" title="Sudut">∠</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="^\circ" title="Derajat">°</button>
+                                        <button type="button" class="math-btn px-2 py-1 bg-white border border-blue-300 rounded hover:bg-blue-100" data-target="question-content" data-formula="\begin{pmatrix} a & b \\\\ c & d \end{pmatrix}" title="Matriks">[ ]</button>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-xs text-blue-500 italic">Klik tombol di atas → popup editor rumus muncul → edit angka/variabel → klik "Sisipkan". Klik rumus yang sudah ada di editor untuk mengeditnya.</div>
                             </div>
 
-                            <textarea id="question-content" x-model="form.content" rows="6" class="border-gray-300 focus:border-sapta-500 focus:ring-sapta-500 rounded-md shadow-sm block w-full" placeholder="Contoh: Tentukan hasil dari $\frac{2}{3} + \frac{1}{4}$ = ..."></textarea>
+                            <!-- Editor Soal (WYSIWYG - Math langsung ter-render) -->
+                            <div
+                                id="question-content"
+                                contenteditable="true"
+                                data-placeholder="Ketik soal di sini. Klik simbol di atas untuk menyisipkan rumus matematika..."
+                                @focus="window.lastFocusedEditor = $el"
+                                @input="form.content = $el.innerHTML"
+                                x-init="$nextTick(() => { if(form.content) $el.innerHTML = form.content })"
+                                class="math-editor border border-gray-300 focus:border-sapta-500 focus:ring-2 focus:ring-sapta-200 rounded-md shadow-sm block w-full text-sm p-3 bg-white"
+                            ></div>
                             <p x-show="errors.content" class="text-red-500 text-xs mt-1" x-text="errors.content"></p>
                             
                             <!-- Media Uploader -->
@@ -172,20 +366,33 @@
                                         </div>
 
                                         <div class="flex-1">
-                                            <!-- Math Toolbar Mini untuk opsi jawaban -->
-                                            <div class="flex gap-1 mb-1 flex-wrap">
-                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\frac{a}{b}">a/b</button>
-                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="x^{2}">x²</button>
-                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\sqrt{x}">√x</button>
-                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\pi">π</button>
-                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\infty">∞</button>
-                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\times">×</button>
-                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\pm">±</button>
-                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\leq">≤</button>
-                                                <button type="button" class="math-btn-opt px-1.5 py-0.5 text-[10px] bg-blue-50 border border-blue-200 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\geq">≥</button>
+                                            <!-- Comprehensive Math Toolbar Mini untuk opsi jawaban -->
+                                            <div class="mb-1 p-1.5 bg-blue-50 border border-blue-200 rounded text-[10px]">
+                                                <div class="flex flex-wrap gap-1">
+                                                    <button type="button" class="math-btn-opt px-1.5 py-0.5 bg-white border border-blue-300 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="+" title="Tambah">+</button>
+                                                    <button type="button" class="math-btn-opt px-1.5 py-0.5 bg-white border border-blue-300 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="-" title="Kurang">-</button>
+                                                    <button type="button" class="math-btn-opt px-1.5 py-0.5 bg-white border border-blue-300 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\times" title="Kali">×</button>
+                                                    <button type="button" class="math-btn-opt px-1.5 py-0.5 bg-white border border-blue-300 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\div" title="Bagi">÷</button>
+                                                    <button type="button" class="math-btn-opt px-1.5 py-0.5 bg-white border border-blue-300 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\frac{a}{b}" title="Pecahan">a/b</button>
+                                                    <button type="button" class="math-btn-opt px-1.5 py-0.5 bg-white border border-blue-300 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="x^{2}" title="Pangkat 2">x²</button>
+                                                    <button type="button" class="math-btn-opt px-1.5 py-0.5 bg-white border border-blue-300 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\sqrt{x}" title="Akar">√x</button>
+                                                    <button type="button" class="math-btn-opt px-1.5 py-0.5 bg-white border border-blue-300 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\pi" title="Pi">π</button>
+                                                    <button type="button" class="math-btn-opt px-1.5 py-0.5 bg-white border border-blue-300 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\infty" title="Tak Hingga">∞</button>
+                                                    <button type="button" class="math-btn-opt px-1.5 py-0.5 bg-white border border-blue-300 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\leq" title="Kurang dari sama dengan">≤</button>
+                                                    <button type="button" class="math-btn-opt px-1.5 py-0.5 bg-white border border-blue-300 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\geq" title="Lebih dari sama dengan">≥</button>
+                                                    <button type="button" class="math-btn-opt px-1.5 py-0.5 bg-white border border-blue-300 rounded hover:bg-blue-100" :data-target="'option-content-' + index" data-formula="\neq" title="Tidak sama dengan">≠</button>
+                                                </div>
                                             </div>
-                                            <!-- Matching requires two parts: we simulate it by parsing or dual fields. For simplicity, just one field here for UI -->
-                                            <textarea :id="'option-content-' + index" x-model="option.content" rows="2" class="border-gray-300 focus:border-sapta-500 focus:ring-sapta-500 rounded-md shadow-sm block w-full text-sm" placeholder="Teks opsi... (gunakan $rumus$ untuk formula, cth: $x^2 + 1$)"></textarea>
+                                            <!-- Editor Opsi (WYSIWYG) -->
+                                            <div
+                                                :id="'option-content-' + index"
+                                                contenteditable="true"
+                                                data-placeholder="Ketik opsi jawaban..."
+                                                @focus="window.lastFocusedEditor = $el"
+                                                @input="option.content = $el.innerHTML"
+                                                x-init="$nextTick(() => { if(option.content) $el.innerHTML = option.content })"
+                                                class="math-editor-opt border border-gray-300 focus:border-sapta-500 focus:ring-2 focus:ring-sapta-200 rounded-md shadow-sm block w-full text-sm p-2 bg-white"
+                                            ></div>
                                         </div>
 
                                         <!-- Weight -->
@@ -628,56 +835,264 @@
 
 @push('scripts')
 <script>
-// ─── Math Toolbar Handler ──────────────────────────────────────────────────
+// ─── Math WYSIWYG + MathQuill Popup Editor ────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
 
-    // Fungsi untuk menyisipkan teks di posisi kursor pada textarea
-    function insertAtCursor(textarea, text) {
-        if (!textarea) return;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const before = textarea.value.substring(0, start);
-        const after = textarea.value.substring(end);
-        const insert = '$' + text + '$';
-        textarea.value = before + insert + after;
-        // Trigger Alpine.js x-model update
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-        // Kembalikan fokus dan posisi kursor
-        textarea.focus();
-        const newPos = start + insert.length;
-        textarea.setSelectionRange(newPos, newPos);
+    // ── Variabel global ──────────────────────────────────────────────────
+    let savedRange = null;
+    let savedEditor = null;
+    let mqField = null;          // MathQuill instance di popup
+    let editingSpan = null;      // Span yang sedang di-edit (null = baru)
+
+    // ── Simpan posisi kursor sebelum klik tombol toolbar ─────────────────
+    document.addEventListener('mousedown', function (e) {
+        const isBtn = e.target.closest('.math-btn, .math-btn-opt');
+        if (isBtn) {
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0) {
+                savedRange = sel.getRangeAt(0).cloneRange();
+            }
+            savedEditor = window.lastFocusedEditor || null;
+            e.preventDefault();
+        }
+    });
+
+    // ── Buat elemen popup MathQuill (sekali saja) ────────────────────────
+    const overlay = document.createElement('div');
+    overlay.id = 'mq-popup-overlay';
+    document.body.appendChild(overlay);
+
+    const popup = document.createElement('div');
+    popup.id = 'mq-popup';
+    popup.innerHTML = `
+        <div class="mq-header">
+            <h3>✏️ Editor Rumus Matematika</h3>
+            <button type="button" onclick="closeMqPopup()" style="font-size:20px;color:#9ca3af;background:none;border:none;cursor:pointer;">&times;</button>
+        </div>
+        <div class="mq-body">
+            <div class="text-xs text-gray-500 mb-2">Ketik atau edit rumus di bawah. Gunakan keyboard & tombol pintas untuk mengubah variabel/angka:</div>
+            <div class="mq-field-wrap">
+                <div id="mq-editor-field"></div>
+            </div>
+            <div class="mq-shortcuts">
+                <button type="button" data-mq="\\frac" title="Pecahan">a/b</button>
+                <button type="button" data-mq="^" title="Pangkat">x²</button>
+                <button type="button" data-mq="_" title="Subskrip">xₙ</button>
+                <button type="button" data-mq="\\sqrt" title="Akar">√</button>
+                <button type="button" data-mq="\\nthroot" title="Akar pangkat n">ⁿ√</button>
+                <button type="button" data-mq="\\sum" title="Sigma">Σ</button>
+                <button type="button" data-mq="\\int" title="Integral">∫</button>
+                <button type="button" data-mq="\\pi">π</button>
+                <button type="button" data-mq="\\alpha">α</button>
+                <button type="button" data-mq="\\beta">β</button>
+                <button type="button" data-mq="\\theta">θ</button>
+                <button type="button" data-mq="\\Delta">Δ</button>
+                <button type="button" data-mq="\\infty">∞</button>
+                <button type="button" data-mq="\\times">×</button>
+                <button type="button" data-mq="\\div">÷</button>
+                <button type="button" data-mq="\\pm">±</button>
+                <button type="button" data-mq="\\leq">≤</button>
+                <button type="button" data-mq="\\geq">≥</button>
+                <button type="button" data-mq="\\neq">≠</button>
+                <button type="button" data-mq="\\angle">∠</button>
+                <button type="button" data-mq="^\\circ">°</button>
+            </div>
+            <div class="mq-preview-label">Pratinjau hasil:</div>
+            <div class="mq-preview-box" id="mq-preview-result"></div>
+        </div>
+        <div class="mq-footer">
+            <button type="button" class="mq-btn-cancel" onclick="closeMqPopup()">Batal</button>
+            <button type="button" class="mq-btn-insert" onclick="confirmMqInsert()">Sisipkan ✓</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
+
+    // ── Fungsi buka popup ────────────────────────────────────────────────
+    window.openMqPopup = function(initialLatex, spanToEdit) {
+        editingSpan = spanToEdit || null;
+        overlay.style.display = 'block';
+        popup.style.display = 'block';
+
+        const mqEl = document.getElementById('mq-editor-field');
+        mqEl.innerHTML = '';
+
+        // Tunggu DOM render, lalu init MathQuill
+        setTimeout(function() {
+            if (typeof MathQuill === 'undefined' || typeof jQuery === 'undefined') {
+                alert('MathQuill belum siap. Tunggu sebentar lalu coba lagi.');
+                closeMqPopup();
+                return;
+            }
+            const MQ = MathQuill.getInterface(2);
+            mqField = MQ.MathField(mqEl, {
+                spaceBehavesLikeTab: true,
+                handlers: {
+                    edit: function() {
+                        updateMqPreview();
+                    }
+                }
+            });
+            // Masukkan formula awal
+            if (initialLatex) {
+                mqField.latex(initialLatex);
+            }
+            mqField.focus();
+            updateMqPreview();
+        }, 100);
+    };
+
+    // ── Fungsi tutup popup ───────────────────────────────────────────────
+    window.closeMqPopup = function() {
+        overlay.style.display = 'none';
+        popup.style.display = 'none';
+        mqField = null;
+        editingSpan = null;
+    };
+
+    // ── Update preview di popup ──────────────────────────────────────────
+    function updateMqPreview() {
+        if (!mqField) return;
+        const latex = mqField.latex();
+        const previewBox = document.getElementById('mq-preview-result');
+        if (!previewBox) return;
+        if (!latex || latex.trim() === '') {
+            previewBox.innerHTML = '<span style="color:#9ca3af;font-size:13px;">Belum ada rumus...</span>';
+            return;
+        }
+        try {
+            katex.render(latex, previewBox, { throwOnError: false, displayMode: false });
+        } catch(e) {
+            previewBox.textContent = latex;
+        }
     }
 
-    // Handler untuk tombol toolbar pertanyaan utama
-    document.addEventListener('click', function (e) {
-        // Tombol di toolbar soal
-        if (e.target.classList.contains('math-btn')) {
-            e.preventDefault();
-            const targetId = e.target.getAttribute('data-target');
-            const formula = e.target.getAttribute('data-formula');
-            const textarea = document.getElementById(targetId);
-            insertAtCursor(textarea, formula);
+    // ── Sisipkan hasil dari popup ke editor ───────────────────────────────
+    window.confirmMqInsert = function() {
+        if (!mqField) return;
+        const latex = mqField.latex();
+        if (!latex || latex.trim() === '') {
+            closeMqPopup();
+            return;
         }
 
-        // Tombol di toolbar opsi jawaban (menggunakan data-target dinamis dari Alpine)
-        if (e.target.classList.contains('math-btn-opt')) {
+        // Jika sedang mengedit rumus yang sudah ada (klik rumus → edit)
+        if (editingSpan && editingSpan.parentNode) {
+            editingSpan.setAttribute('data-formula', latex);
+            try {
+                katex.render(latex, editingSpan, { throwOnError: false, displayMode: false });
+            } catch(e) {
+                editingSpan.textContent = latex;
+            }
+            // Sync ke Alpine
+            const editor = editingSpan.closest('.math-editor, .math-editor-opt');
+            if (editor) editor.dispatchEvent(new Event('input', { bubbles: true }));
+            closeMqPopup();
+            return;
+        }
+
+        // Sisipkan baru ke editor
+        const editor = savedEditor || window.lastFocusedEditor;
+        if (!editor || !editor.isContentEditable) {
+            closeMqPopup();
+            return;
+        }
+
+        // Buat span rendered
+        const span = document.createElement('span');
+        span.className = 'katex-rendered';
+        span.setAttribute('data-formula', latex);
+        span.contentEditable = 'false';
+        try {
+            katex.render(latex, span, { throwOnError: false, displayMode: false });
+        } catch(e) {
+            span.textContent = latex;
+        }
+
+        // Fokuskan editor dan restore kursor
+        editor.focus();
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        let range;
+        if (savedRange && editor.contains(savedRange.commonAncestorContainer)) {
+            range = savedRange;
+        } else {
+            range = document.createRange();
+            range.selectNodeContents(editor);
+            range.collapse(false);
+        }
+        sel.addRange(range);
+
+        range.deleteContents();
+        range.insertNode(span);
+
+        // Kursor setelah rumus
+        const afterNode = document.createTextNode('\u00A0');
+        span.after(afterNode);
+        const newRange = document.createRange();
+        newRange.setStartAfter(afterNode);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+        savedRange = null;
+
+        // Sync Alpine
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
+        closeMqPopup();
+    };
+
+    // ── Handler: klik tombol toolbar → buka popup MathQuill ─────────────
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.math-btn, .math-btn-opt');
+        if (btn) {
             e.preventDefault();
-            const targetId = e.target.getAttribute('data-target');
-            const formula = e.target.getAttribute('data-formula');
-            // Cari textarea berdasarkan id yang di-bind oleh Alpine
-            const textarea = document.getElementById(targetId);
-            if (textarea) {
-                insertAtCursor(textarea, formula);
-            } else {
-                // Fallback: cari textarea terdekat
-                const container = e.target.closest('.flex-1');
-                if (container) {
-                    const ta = container.querySelector('textarea');
-                    if (ta) insertAtCursor(ta, formula);
-                }
+            const formula = btn.getAttribute('data-formula');
+            openMqPopup(formula, null);
+        }
+    });
+
+    // ── Handler: klik rumus yang sudah ada di editor → edit ──────────────
+    document.addEventListener('click', function (e) {
+        const rendered = e.target.closest('.katex-rendered');
+        if (rendered && rendered.closest('.math-editor, .math-editor-opt')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const existingLatex = rendered.getAttribute('data-formula') || '';
+            // Set editor & range context
+            window.lastFocusedEditor = rendered.closest('.math-editor, .math-editor-opt');
+            openMqPopup(existingLatex, rendered);
+        }
+    });
+
+    // ── Handler: tombol shortcut di dalam popup MathQuill ────────────────
+    popup.addEventListener('click', function(e) {
+        const shortBtn = e.target.closest('.mq-shortcuts button');
+        if (shortBtn && mqField) {
+            e.preventDefault();
+            const cmd = shortBtn.getAttribute('data-mq');
+            if (cmd) {
+                mqField.cmd(cmd);
+                mqField.focus();
             }
         }
     });
+
+    // ── Tutup popup dengan tombol Escape ─────────────────────────────────
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && popup.style.display === 'block') {
+            closeMqPopup();
+        }
+    });
+
+    // ── Klik overlay = tutup ─────────────────────────────────────────────
+    overlay.addEventListener('click', function() {
+        closeMqPopup();
+    });
+
+    // ── Set editor utama sebagai default ─────────────────────────────────
+    const mainEditor = document.getElementById('question-content');
+    if (mainEditor) {
+        window.lastFocusedEditor = mainEditor;
+    }
 });
 </script>
 @endpush

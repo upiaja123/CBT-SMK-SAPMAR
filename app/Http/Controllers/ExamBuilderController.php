@@ -48,7 +48,13 @@ class ExamBuilderController extends Controller
         }
         
         // Only load question banks user has access to
-        $banksQuery = \App\Models\QuestionBank::with(['questions.currentVersion.options', 'subject']);
+        $banksQuery = \App\Models\QuestionBank::with([
+            'questions' => function ($q) {
+                $q->orderBy('id', 'asc');
+            },
+            'questions.currentVersion.options',
+            'subject'
+        ]);
         if (auth()->user()->hasRole('guru')) {
             $banksQuery->where('teacher_id', auth()->user()->teacher?->id);
         }
@@ -118,7 +124,13 @@ class ExamBuilderController extends Controller
             $students = \App\Models\Student::with('user', 'schoolClass')->get();
         }
         
-        $banksQuery = \App\Models\QuestionBank::with(['questions.currentVersion.options', 'subject']);
+        $banksQuery = \App\Models\QuestionBank::with([
+            'questions' => function ($q) {
+                $q->orderBy('id', 'asc');
+            },
+            'questions.currentVersion.options',
+            'subject'
+        ]);
         if (auth()->user()->hasRole('guru')) {
             $banksQuery->where('teacher_id', auth()->user()->teacher?->id);
         }

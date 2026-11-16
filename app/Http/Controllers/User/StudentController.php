@@ -112,7 +112,7 @@ class StudentController extends Controller
                 'email' => $email,
             ];
 
-            if (!empty($validated['password'])) {
+            if (!empty($validated['password']) && !auth()->user()->hasRole('kurikulum')) {
                 $userUpdateData['password'] = Hash::make($validated['password']);
             }
 

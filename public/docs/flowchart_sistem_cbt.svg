@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 2300" width="100%" height="100%" style="background:#ffffff; font-family:Arial, sans-serif;">
+<text x="60" y="55" font-size="20" font-weight="bold" fill="#000000">FLOWCHART SISTEM CBT SAPMAR</text>
+<text x="60" y="80" font-size="12" fill="#555555">Berdasarkan Referensi Alur Sistem End-to-End Pelaksanaan Ujian Berbasis Komputer</text>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 1 L 10 5 L 0 9 z" fill="#000000"/></marker>
+</defs>
+<ellipse cx="250" cy="140" rx="70.0" ry="25.0" fill="#ffffff" stroke="#000000" stroke-width="2"/><text x="250" y="145" text-anchor="middle" font-size="12" font-weight="bold" fill="#000000">Start</text>
+<path d="M 250,165 L 250,205" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="175.0" y="205.0" width="150" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="250" y="227" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">User</text><text x="250" y="241" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">(Admin/Guru/Siswa/Proktor)</text>
+<path d="M 250,255 L 250,295" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="175.0" y="295.0" width="150" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="250" y="317" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Login / Register</text><text x="250" y="331" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">(Web & Google Auth)</text>
+<path d="M 250,345 L 250,385" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="175.0" y="385.0" width="150" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="250" y="407" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Menyiapkan Ujian</text><text x="250" y="421" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">& Master Data</text>
+<path d="M 325,410 L 465,410" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="465.0" y="385.0" width="170" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="550" y="407" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Membuat Bank Soal</text><text x="550" y="421" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">per Mata Pelajaran</text>
+<path d="M 550,435 L 550,475" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="465.0" y="475.0" width="170" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="550" y="497" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Membuat Soal Ujian</text><text x="550" y="511" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">(PG, Esai, Rumus Math)</text>
+<path d="M 550,525 L 550,565" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="465.0" y="565.0" width="170" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="550" y="587" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Manajemen Soal Ujian</text><text x="550" y="601" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">(Preview & Versioning)</text>
+<path d="M 550,615 L 550,655" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="465.0" y="655.0" width="170" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="550" y="677" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Membuat Pelaksanaan</text><text x="550" y="691" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Ujian (Status: Draft)</text>
+<path d="M 635,680 L 840,680" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="840.0" y="655.0" width="220" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="950" y="677" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Manajemen Peserta dan</text><text x="950" y="691" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Penjadwalan Ujian</text>
+<path d="M 950,705 L 950,755" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="840.0" y="755.0" width="220" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="950" y="777" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Pengerjaan Oleh Siswa</text><text x="950" y="791" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">(Input Token Ujian)</text>
+<path d="M 840,780 L 520,780 L 520,873" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="400.0" y="873.0" width="240" height="54" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="520" y="897" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Menjalankan Sistem</text><text x="520" y="911" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">AutoSave Jawaban Real-Time</text>
+<path d="M 940,805 L 940,873" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 960,873 L 960,805" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="840.0" y="873.0" width="220" height="54" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="950" y="897" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Melakukan Monitoring Ujian</text><text x="950" y="911" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">& Sensor Anti-Curang (5x)</text>
+<path d="M 1060,780 L 1340,780 L 1340,873" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="1230.0" y="873.0" width="220" height="54" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="1340" y="897" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Melakukan Pengumpulan</text><text x="1340" y="911" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Pengerjaan Ujian</text>
+<path d="M 1340,927 L 1340,995" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="1230.0" y="995.0" width="220" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="1340" y="1017" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Melakukan Penilaian</text><text x="1340" y="1031" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Hasil Ujian (Auto/Manual)</text>
+<path d="M 1340,1045 L 1340,1095" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="1230.0" y="1095.0" width="220" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="1340" y="1117" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Melakukan Persetujuan &</text><text x="1340" y="1131" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Publikasi Nilai dari Guru</text>
+<path d="M 1340,1145 L 1340,1195" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="1230.0" y="1195.0" width="220" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="1340" y="1217" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Memunculkan Hasil &</text><text x="1340" y="1231" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Dashboard Analitik</text>
+<path d="M 1340,1245 L 1340,1295" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="1230.0" y="1295.0" width="220" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="1340" y="1317" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Melakukan Ekspor Laporan</text><text x="1340" y="1331" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">(Excel / PDF / Berita Acara)</text>
+<path d="M 1340,1345 L 1340,1395" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="1230.0" y="1395.0" width="220" height="50" fill="#ffffff" stroke="#000000" stroke-width="1.2"/><text x="1340" y="1417" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">Mengarsipkan Hasil Ujian</text><text x="1340" y="1431" text-anchor="middle" font-size="11" font-weight="bold" fill="#000000">& Audit Log Sistem</text>
+<path d="M 1340,1445 L 1340,1495" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#arrow)"/>
+<ellipse cx="1340" cy="1520" rx="70.0" ry="25.0" fill="#ffffff" stroke="#000000" stroke-width="2"/><text x="1340" y="1525" text-anchor="middle" font-size="12" font-weight="bold" fill="#000000">Selesai</text>
+</svg>

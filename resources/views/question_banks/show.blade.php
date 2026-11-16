@@ -24,10 +24,12 @@
                 </a>
                 @endcan
                 @can('create', App\Models\Question::class)
+@unless(auth()->user()->hasRole('kurikulum'))
                 <a href="{{ route('questions.create', ['question_bank' => $questionBank->id]) }}" class="inline-flex items-center px-4 py-2 bg-sapta-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-sapta-700 focus:bg-sapta-700 active:bg-sapta-900 focus:outline-none focus:ring-2 focus:ring-sapta-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Tambah Soal
                 </a>
+@endunless
                 @endcan
             </div>
         </div>
@@ -60,7 +62,7 @@
                                                 {{ Str::title(str_replace('_', ' ', $question->currentVersion->type)) }}
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-900">
-                                                <div class="line-clamp-2">{!! strip_tags($question->currentVersion->content) !!}</div>
+                                                <div class="line-clamp-2 max-w-xl math-render-area text-sm text-gray-900 prose prose-sm">{!! $question->currentVersion->content !!}</div>
                                                 <div class="text-xs text-gray-400 mt-1">Versi {{ $question->currentVersion->version }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -83,25 +85,32 @@
                                                         <a href="{{ route('questions.history', $question) }}" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-gray-600 hover:bg-gray-700 shadow-sm" title="History">History</a>
                                                     @endcan
                                                     @can('update', $question)
+@unless(auth()->user()->hasRole('kurikulum'))
                                                         <a href="{{ route('questions.edit', $question) }}" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm" title="Edit">Edit</a>
+@endunless
                                                     @endcan
                                                     @can('publish', $question)
+@unless(auth()->user()->hasRole('kurikulum'))
                                                         @if(in_array($question->status, ['DRAFT', 'REVIEW', 'APPROVED', 'ARCHIVED']))
                                                             <form action="{{ route('questions.publish', $question) }}" method="POST" class="m-0">
                                                                 @csrf
                                                                 <button type="submit" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 shadow-sm" onclick="return confirm('Apakah Anda yakin ingin mem-publish soal ini?')">Publish</button>
                                                             </form>
                                                         @endif
+@endunless
                                                     @endcan
                                                     @can('draft', $question)
+@unless(auth()->user()->hasRole('kurikulum'))
                                                         @if(in_array($question->status, ['PUBLISHED', 'ARCHIVED']))
                                                             <form action="{{ route('questions.draft', $question) }}" method="POST" class="m-0">
                                                                 @csrf
                                                                 <button type="submit" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-yellow-500 hover:bg-yellow-600 shadow-sm" onclick="return confirm('Kembalikan soal ini ke status Draft?')">Draft</button>
                                                             </form>
                                                         @endif
+@endunless
                                                     @endcan
                                                     @can('delete', $question)
+@unless(auth()->user()->hasRole('kurikulum'))
                                                         @if($question->status !== 'ARCHIVED')
                                                             <form action="{{ route('questions.destroy', $question) }}" method="POST" class="m-0">
                                                                 @csrf
@@ -109,8 +118,10 @@
                                                                 <button type="submit" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 shadow-sm" onclick="return confirm('Apakah Anda yakin ingin mengarsipkan soal ini?')">Archive</button>
                                                             </form>
                                                         @endif
+@endunless
                                                     @endcan
                                                     @can('forceDelete', $question)
+@unless(auth()->user()->hasRole('kurikulum'))
                                                         <form action="{{ route('questions.force_destroy', $question) }}" method="POST" class="m-0">
                                                             @csrf
                                                             @method('DELETE')
@@ -119,6 +130,7 @@
                                                                 Hapus
                                                             </button>
                                                         </form>
+@endunless
                                                     @endcan
                                                 </div>
                                             </td>
@@ -142,8 +154,8 @@
                                             </span>
                                             <span class="text-xs text-gray-500">{{ Str::title(str_replace('_', ' ', $question->currentVersion->type)) }}</span>
                                         </div>
-                                        <div class="text-sm text-gray-900 mb-2 line-clamp-3">
-                                            {!! strip_tags($question->currentVersion->content) !!}
+                                        <div class="text-sm text-gray-900 mb-2 line-clamp-3 math-render-area prose prose-sm">
+                                            {!! $question->currentVersion->content !!}
                                         </div>
                                         <div class="flex justify-between items-center text-xs text-gray-500 mb-3 border-b pb-3">
                                             <span>Versi {{ $question->currentVersion->version }}</span>
@@ -154,25 +166,32 @@
                                                 <a href="{{ route('questions.preview', $question) }}" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 shadow-sm">Preview</a>
                                             @endcan
                                             @can('update', $question)
+@unless(auth()->user()->hasRole('kurikulum'))
                                                 <a href="{{ route('questions.edit', $question) }}" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm">Edit</a>
+@endunless
                                             @endcan
                                             @can('publish', $question)
+@unless(auth()->user()->hasRole('kurikulum'))
                                                 @if(in_array($question->status, ['DRAFT', 'REVIEW', 'APPROVED', 'ARCHIVED']))
                                                     <form action="{{ route('questions.publish', $question) }}" method="POST" class="m-0">
                                                         @csrf
                                                         <button type="submit" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 shadow-sm" onclick="return confirm('Apakah Anda yakin ingin mem-publish soal ini?')">Publish</button>
                                                     </form>
                                                 @endif
+@endunless
                                             @endcan
                                             @can('draft', $question)
+@unless(auth()->user()->hasRole('kurikulum'))
                                                 @if(in_array($question->status, ['PUBLISHED', 'ARCHIVED']))
                                                     <form action="{{ route('questions.draft', $question) }}" method="POST" class="m-0">
                                                         @csrf
                                                         <button type="submit" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-yellow-500 hover:bg-yellow-600 shadow-sm" onclick="return confirm('Kembalikan soal ini ke status Draft?')">Draft</button>
                                                     </form>
                                                 @endif
+@endunless
                                             @endcan
                                             @can('delete', $question)
+@unless(auth()->user()->hasRole('kurikulum'))
                                                 @if($question->status !== 'ARCHIVED')
                                                     <form action="{{ route('questions.destroy', $question) }}" method="POST" class="m-0">
                                                         @csrf
@@ -180,8 +199,10 @@
                                                         <button type="submit" class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 shadow-sm" onclick="return confirm('Apakah Anda yakin ingin mengarsipkan soal ini?')">Archive</button>
                                                     </form>
                                                 @endif
+@endunless
                                             @endcan
                                             @can('forceDelete', $question)
+@unless(auth()->user()->hasRole('kurikulum'))
                                                 <form action="{{ route('questions.force_destroy', $question) }}" method="POST" class="m-0">
                                                     @csrf
                                                     @method('DELETE')
@@ -190,6 +211,7 @@
                                                         Hapus
                                                     </button>
                                                 </form>
+@endunless
                                             @endcan
                                         </div>
                                     </div>
@@ -202,11 +224,13 @@
                             <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada soal</h3>
                             <p class="mt-1 text-sm text-gray-500">Bank soal ini belum memiliki pertanyaan.</p>
                             @can('create', App\Models\Question::class)
+@unless(auth()->user()->hasRole('kurikulum'))
                             <div class="mt-6">
                                 <a href="{{ route('questions.create', ['question_bank' => $questionBank->id]) }}" class="inline-flex items-center px-4 py-2 bg-sapta-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-sapta-700">
                                     Tambah Soal Sekarang
                                 </a>
                             </div>
+@endunless
                             @endcan
                         </div>
                     @endif

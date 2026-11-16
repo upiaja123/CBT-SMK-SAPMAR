@@ -170,46 +170,46 @@
 
                 <!-- STEP 4: Questions -->
                 <div x-show="currentStep === 4" class="p-6" style="display: none;">
-                    <h3 class="text-lg font-bold mb-4">Langkah 4: Pilih Soal dari Bank</h3>
+                    <div class="mb-4">
+                        <h3 class="text-lg font-bold text-gray-900">Langkah 4: Pilih Soal dari Bank</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Klik pada salah satu <strong>Bank Soal</strong> di bawah untuk membuka pop-up daftar soal dan memilih soal ke dalam ujian.</p>
+                    </div>
                     
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Browse Bank -->
-                        <div class="border rounded-md p-4 lg:col-span-1 flex flex-col h-[500px]">
-                            <h4 class="font-medium border-b pb-2 mb-3">Bank Soal Anda</h4>
-                            <div class="flex-1 overflow-y-auto space-y-3">
+                        <!-- Browse Bank (Clickable Cards to open Popup) -->
+                        <div class="border border-gray-200 rounded-xl p-4 lg:col-span-1 flex flex-col h-[520px] bg-gray-50/50">
+                            <h4 class="font-semibold text-gray-800 border-b pb-2.5 mb-3 flex items-center justify-between">
+                                <span>Bank Soal Anda</span>
+                                <span class="text-xs font-normal text-gray-500">Klik untuk pilih soal</span>
+                            </h4>
+                            <div class="flex-1 overflow-y-auto space-y-3 pr-1">
                                 @foreach($banks as $bank)
-                                    <div class="border border-gray-200 rounded p-3 bg-white" x-show="form.subject_id == '' || form.subject_id == {{ $bank->subject_id }}">
-                                        <h5 class="font-bold text-sm text-gray-900">{{ $bank->name }}</h5>
-                                        <p class="text-xs text-gray-500 mb-2">{{ $bank->subject->name }} | {{ $bank->questions->count() }} Soal</p>
+                                    @php
+                                        $publishedQuestions = $bank->questions->where('status', 'PUBLISHED');
+                                        $publishedVersionIds = $publishedQuestions->pluck('current_version_id')->values()->all();
+                                    @endphp
+                                    <div x-show="form.subject_id == '' || form.subject_id == {{ $bank->subject_id }}"
+                                         @click="openBankModal({{ $bank->id }})"
+                                         class="group border border-gray-200 hover:border-sapta-500 rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer relative">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <h5 class="font-bold text-sm text-gray-900 group-hover:text-sapta-700 transition-colors leading-snug">
+                                                {{ $bank->name }}
+                                            </h5>
+                                            <span x-show="countSelectedInBank({{ json_encode($publishedVersionIds) }}) > 0"
+                                                  class="shrink-0 px-2 py-0.5 text-[11px] font-bold bg-green-100 text-green-700 rounded-full">
+                                                <span x-text="countSelectedInBank({{ json_encode($publishedVersionIds) }})"></span> Terpilih
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1.5">{{ $bank->subject->name }}{{ $bank->grade ? ' • Kelas ' . $bank->grade : '' }}</p>
                                         
-                                        <div class="space-y-2 mt-2 pt-2 border-t border-gray-100 max-h-40 overflow-y-auto">
-                                            @php $hasPublished = false; @endphp
-                                            @foreach($bank->questions as $q)
-                                                @if($q->status === 'PUBLISHED')
-                                                    @php $hasPublished = true; @endphp
-                                                    @php
-                                                        $qLabel = Str::limit(trim(preg_replace('/\s+/', ' ', strip_tags($q->currentVersion->content))), 50);
-                                                    @endphp
-                                                    <div class="flex justify-between items-center bg-gray-50 p-1.5 rounded text-xs">
-                                                        <span class="line-clamp-1 flex-1 mr-2" title="{{ strip_tags($q->currentVersion->content) }}">
-                                                            {{ Str::limit(strip_tags($q->currentVersion->content), 20) }}
-                                                        </span>
-                                                        <button type="button"
-                                                                data-qid="{{ $q->current_version_id }}"
-                                                                data-qlabel="{{ e($qLabel) }}"
-                                                                @click="addQuestionToExam($event.currentTarget.dataset.qid, $event.currentTarget.dataset.qlabel)"
-                                                                class="px-2 py-1 bg-sapta-100 text-sapta-700 hover:bg-sapta-200 rounded shrink-0">
-                                                            Tambah
-                                                        </button>
-                                                    </div>
-                                                @endif
-                                            @endforeach
-                                            
-                                            @if(!$hasPublished)
-                                                <div class="text-xs text-gray-400 text-center py-2">
-                                                    Belum ada soal berstatus PUBLISHED
-                                                </div>
-                                            @endif
+                                        <div class="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs">
+                                            <span class="text-gray-600 font-medium">
+                                                {{ $publishedQuestions->count() }} Soal Siap Pakai
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 font-semibold text-sapta-600 group-hover:translate-x-0.5 transition-transform">
+                                                Pilih Soal
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                            </span>
                                         </div>
                                     </div>
                                 @endforeach
@@ -217,37 +217,182 @@
                         </div>
 
                         <!-- Selected Questions -->
-                        <div class="border rounded-md p-4 lg:col-span-2 flex flex-col h-[500px]">
-                            <h4 class="font-medium border-b pb-2 mb-3 flex justify-between items-center">
+                        <div class="border border-gray-200 rounded-xl p-4 lg:col-span-2 flex flex-col h-[520px] bg-white">
+                            <h4 class="font-semibold text-gray-800 border-b pb-2.5 mb-3 flex justify-between items-center">
                                 <span>Soal Terpilih untuk Ujian Ini</span>
-                                <span class="bg-sapta-100 text-sapta-800 text-xs px-2 py-1 rounded-full"><span x-text="form.questions.length"></span> Soal</span>
+                                <span class="bg-sapta-100 text-sapta-800 text-xs font-semibold px-2.5 py-1 rounded-full"><span x-text="form.questions.length"></span> Soal</span>
                             </h4>
                             
-                            <div class="flex-1 overflow-y-auto space-y-2 bg-gray-50 p-2 rounded" x-init="initSortable($el)">
+                            <div class="flex-1 overflow-y-auto space-y-2.5 bg-gray-50 p-3 rounded-lg" x-init="initSortable($el)">
                                 <template x-for="(q, index) in form.questions" :key="q.question_version_id">
-                                    <div class="bg-white border border-gray-200 rounded p-3 flex items-center shadow-sm cursor-move sortable-item">
-                                        <div class="cursor-move text-gray-300 mr-2">
+                                    <div class="bg-white border border-gray-200 rounded-lg p-3.5 flex items-start shadow-sm cursor-move sortable-item hover:border-gray-300 transition">
+                                        <div class="cursor-move text-gray-300 hover:text-gray-500 mr-2.5 mt-0.5">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
                                         </div>
-                                        <div class="font-bold text-gray-400 mr-3" x-text="(index + 1) + '.'"></div>
-                                        <div class="flex-1 text-sm text-gray-800 line-clamp-2" x-text="q.previewText"></div>
-                                        <div class="mx-4 flex items-center">
+                                        <div class="font-bold text-gray-500 mr-3 mt-0.5 text-sm" x-text="(index + 1) + '.'"></div>
+                                        <div class="flex-1 text-sm text-gray-800 line-clamp-3 math-render-area prose prose-sm max-w-none" x-html="q.previewText"></div>
+                                        <div class="ml-4 flex items-center shrink-0">
                                             <span class="text-xs text-gray-500 mr-2">Bobot:</span>
-                                            <input type="number" x-model.number="q.weight" class="w-16 h-8 text-sm border-gray-300 rounded" min="1">
+                                            <input type="number" x-model.number="q.weight" class="w-16 h-8 text-sm border-gray-300 rounded-md focus:ring-sapta-500 focus:border-sapta-500" min="1">
                                         </div>
-                                        <button type="button" @click="removeQuestionFromExam(index)" class="text-red-500 hover:text-red-700">
+                                        <button type="button" @click="removeQuestionFromExam(index)" class="ml-3 mt-1 text-red-500 hover:text-red-700 shrink-0" title="Hapus dari ujian">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>
                                     </div>
                                 </template>
                                 
-                                <div x-show="form.questions.length === 0" class="text-center py-8 text-gray-400 text-sm">
-                                    Belum ada soal terpilih. Tambahkan dari Bank Soal di sebelah kiri.
-                                    <br/><span class="text-xs">Hanya soal dengan status PUBLISHED yang dapat dipilih.</span>
+                                <div x-show="form.questions.length === 0" class="text-center py-16 text-gray-400 text-sm">
+                                    <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    Belum ada soal terpilih.<br/>
+                                    <span class="text-xs">Klik salah satu <strong>Bank Soal</strong> di sebelah kiri untuk memilih soal melalui pop-up.</span>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- POP-UP MODAL PILIH SOAL DARI BANK -->
+                    @foreach($banks as $bank)
+                        @php
+                            $publishedQuestions = $bank->questions->where('status', 'PUBLISHED')->sortBy('id')->values();
+                            $bankQuestionsPayload = $publishedQuestions->map(function($q) {
+                                return [
+                                    'qid' => (string) $q->current_version_id,
+                                    'label' => $q->currentVersion->content,
+                                ];
+                            })->values()->all();
+                        @endphp
+                        <div x-show="activeBankId === {{ $bank->id }}"
+                             @keydown.escape.window="closeBankModal()"
+                             class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6"
+                             style="display: none;"
+                             role="dialog"
+                             aria-modal="true">
+                            
+                            <!-- Backdrop with smooth Fade -->
+                            <div x-show="activeBankId === {{ $bank->id }}"
+                                 x-transition:enter="ease-out duration-300"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 x-transition:leave="ease-in duration-200"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0"
+                                 class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity"
+                                 @click="closeBankModal()"
+                                 aria-hidden="true"></div>
+
+                            <!-- Modal Box: Compact/Medium Box ("kotak kecil hampir sedang, tidak full sampe atas") with Zoom/Scale Animation -->
+                            <div x-show="activeBankId === {{ $bank->id }}"
+                                 x-transition:enter="ease-out duration-300 transform transition-all"
+                                 x-transition:enter-start="opacity-0 scale-90 translate-y-3"
+                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave="ease-in duration-200 transform transition-all"
+                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 scale-90 translate-y-3"
+                                 @click.outside="closeBankModal()"
+                                 class="relative w-full max-w-xl md:max-w-2xl bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden z-10"
+                                 style="max-height: 70vh; height: 540px;">
+                                
+                                <!-- Modal Header -->
+                                <div class="px-5 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between gap-3 shrink-0">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-sapta-100 text-sapta-800 shrink-0">Bank Soal</span>
+                                            <h4 class="text-sm font-bold text-gray-900 truncate">{{ $bank->name }}</h4>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-0.5 truncate">
+                                            {{ $bank->subject->name }}{{ $bank->grade ? ' • Kelas ' . $bank->grade : '' }} • {{ $publishedQuestions->count() }} Soal
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        @if($publishedQuestions->count() > 0)
+                                            <button type="button"
+                                                    @click="addAllFromBank({{ json_encode($bankQuestionsPayload) }})"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-sapta-600 text-white hover:bg-sapta-700 transition shadow-xs">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                <span>Pilih Semua ({{ $publishedQuestions->count() }})</span>
+                                            </button>
+                                        @endif
+                                        <button type="button"
+                                                @click="closeBankModal()"
+                                                class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition"
+                                                title="Tutup (Esc)">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Modal Body: Daftar Soal (Scrollable starting at Soal #1) -->
+                                <div id="bank-modal-body-{{ $bank->id }}"
+                                     class="flex-1 min-h-0 overflow-y-auto p-4 space-y-2.5 bg-gray-50/50"
+                                     style="overflow-y: auto;">
+                                    @forelse($publishedQuestions as $idx => $q)
+                                        @php
+                                            $qv = $q->currentVersion;
+                                        @endphp
+                                        <div class="bg-white border rounded-xl p-3 shadow-xs transition-all flex flex-col sm:flex-row sm:items-start justify-between gap-3"
+                                             :class="isQuestionSelected('{{ $qv->id }}') ? 'border-green-400 ring-1 ring-green-200 bg-green-50/20' : 'border-gray-200 hover:border-gray-300'">
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+                                                    <span class="px-2 py-0.5 text-xs font-bold rounded bg-gray-100 text-gray-700">
+                                                        Soal #{{ $idx + 1 }}
+                                                    </span>
+                                                    <span class="px-2 py-0.5 text-[11px] font-medium rounded bg-blue-50 text-blue-700">
+                                                        {{ Str::title(str_replace('_', ' ', $qv->type)) }}
+                                                    </span>
+                                                    @if($qv->cognitive_level || $qv->difficulty)
+                                                        <span class="px-2 py-0.5 text-[11px] font-medium rounded bg-amber-50 text-amber-700">
+                                                            {{ $qv->cognitive_level ?? '-' }} / {{ $qv->difficulty ?? '-' }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="text-xs sm:text-sm text-gray-800 math-render-area prose prose-sm max-w-none leading-relaxed">
+                                                    {!! $qv->content !!}
+                                                </div>
+                                            </div>
+
+                                            <div class="shrink-0 flex sm:self-start">
+                                                <button type="button"
+                                                        x-show="!isQuestionSelected('{{ $qv->id }}')"
+                                                        data-qid="{{ $qv->id }}"
+                                                        data-qlabel="{{ e($qv->content) }}"
+                                                        @click="addQuestionToExam($event.currentTarget.dataset.qid, $event.currentTarget.dataset.qlabel)"
+                                                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-sapta-600 hover:bg-sapta-700 text-white text-xs font-semibold rounded-lg shadow-xs transition">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                    Tambah
+                                                </button>
+
+                                                <button type="button"
+                                                        x-show="isQuestionSelected('{{ $qv->id }}')"
+                                                        @click="removeQuestionByVersionId('{{ $qv->id }}')"
+                                                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-red-600 text-white text-xs font-semibold rounded-lg shadow-xs transition group">
+                                                    <svg class="w-3.5 h-3.5 group-hover:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                    <svg class="w-3.5 h-3.5 hidden group-hover:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    <span class="group-hover:hidden">Terpilih</span>
+                                                    <span class="hidden group-hover:inline">Batalkan</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <div class="text-center py-12 text-gray-400 text-sm bg-white rounded-xl border border-dashed border-gray-200">
+                                            Belum ada soal berstatus <strong>PUBLISHED</strong> pada bank soal ini.
+                                        </div>
+                                    @endforelse
+                                </div>
+
+                                <!-- Modal Footer -->
+                                <div class="px-5 py-2.5 border-t border-gray-200 bg-white flex items-center justify-between shrink-0">
+                                    <div class="text-xs text-gray-600">
+                                        Total terpilih: <strong class="text-sapta-600 font-bold" x-text="form.questions.length"></strong> soal
+                                    </div>
+                                    <button type="button"
+                                            @click="closeBankModal()"
+                                            class="px-4 py-1.5 bg-gray-800 hover:bg-gray-900 text-white text-xs font-semibold rounded-lg transition shadow-xs">
+                                        Selesai
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
 
                 <!-- STEP 5: Randomization & Scoring -->
@@ -387,8 +532,8 @@
                     existingExam.exam_questions.forEach(eq => {
                         if (eq.question_version) {
                             defaultForm.questions.push({
-                                question_version_id: eq.question_version_id,
-                                previewText: eq.question_version.content.replace(/<[^>]*>?/gm, '').substring(0, 50),
+                                question_version_id: String(eq.question_version_id),
+                                previewText: eq.question_version.content,
                                 order: eq.order,
                                 weight: parseFloat(eq.weight)
                             });
@@ -407,6 +552,7 @@
                     { id: 6, title: 'Review' }
                 ],
                 currentStep: 1,
+                activeBankId: null,
                 studentSearch: '',
                 isSubmitting: false,
                 errorMessage: '',
@@ -418,6 +564,13 @@
                     this.$watch('form', () => this.saveDraft(), { deep: true });
                     this.$watch('form.start_at', (value) => this.calculateEndAt());
                     this.$watch('form.duration', (value) => this.calculateEndAt());
+                    this.$watch('activeBankId', (val) => {
+                        if (val !== null) {
+                            document.body.classList.add('overflow-hidden');
+                        } else {
+                            document.body.classList.remove('overflow-hidden');
+                        }
+                    });
                 },
 
                 calculateEndAt() {
@@ -511,16 +664,62 @@
                     return true;
                 },
 
+                openBankModal(bankId) {
+                    this.activeBankId = bankId;
+                    this.$nextTick(() => {
+                        const bodyEl = document.getElementById(`bank-modal-body-${bankId}`);
+                        if (bodyEl) {
+                            bodyEl.scrollTop = 0;
+                        }
+                        if (window.renderAllMath) window.renderAllMath();
+                    });
+                },
+
+                closeBankModal() {
+                    this.activeBankId = null;
+                },
+
+                isQuestionSelected(versionId) {
+                    const vid = String(versionId);
+                    return this.form.questions.some(q => String(q.question_version_id) === vid);
+                },
+
+                countSelectedInBank(versionIds) {
+                    if (!Array.isArray(versionIds)) return 0;
+                    const set = new Set(versionIds.map(v => String(v)));
+                    return this.form.questions.filter(q => set.has(String(q.question_version_id))).length;
+                },
+
+                addAllFromBank(questionsList) {
+                    if (!Array.isArray(questionsList)) return;
+                    questionsList.forEach(item => {
+                        this.addQuestionToExam(item.qid, item.label);
+                    });
+                },
+
                 addQuestionToExam(versionId, previewText) {
+                    const vid = String(versionId);
                     // Check if already added
-                    if (this.form.questions.find(q => q.question_version_id === versionId)) return;
+                    if (this.form.questions.find(q => String(q.question_version_id) === vid)) return;
                     
                     this.form.questions.push({
-                        question_version_id: versionId,
+                        question_version_id: vid,
                         previewText: previewText,
                         order: this.form.questions.length + 1,
                         weight: 1
                     });
+
+                    this.$nextTick(() => {
+                        if (window.renderAllMath) window.renderAllMath();
+                    });
+                },
+
+                removeQuestionByVersionId(versionId) {
+                    const vid = String(versionId);
+                    const idx = this.form.questions.findIndex(q => String(q.question_version_id) === vid);
+                    if (idx !== -1) {
+                        this.removeQuestionFromExam(idx);
+                    }
                 },
 
                 removeQuestionFromExam(index) {

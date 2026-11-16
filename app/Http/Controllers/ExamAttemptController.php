@@ -20,12 +20,26 @@ class ExamAttemptController extends Controller
             return back()->with('error', 'Hanya siswa yang dapat memulai ujian.');
         }
 
+        // 1. Validasi Token Ujian jika ujian dikonfigurasi menggunakan token
+        if (!empty($exam->token)) {
+            $request->validate([
+                'token' => 'required|string',
+            ], [
+                'token.required' => 'Token ujian wajib diisi untuk memulai ujian.',
+            ]);
+
+            if (strtoupper(trim($request->token)) !== strtoupper(trim($exam->token))) {
+                return back()->with('error', 'Token ujian yang Anda masukkan tidak valid.');
+            }
+        }
+
         try {
+            // 2. Pendelegasian pembuatan attempt & snapshot ke ExamAttemptService
             $attempt = $this->attemptService->startAttempt($exam, $user->student);
 
             return redirect()->route('exams.attempts.session', ['exam' => $exam->id, 'attempt' => $attempt->id]);
         } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
-            return back()->with('error', 'tidak bisa masuk silahkan hubungi admin');
+            return back()->with('error', $e->getMessage() ?: 'Tidak bisa masuk ke sesi ujian, silakan hubungi admin/pengawas.');
         }
     }
 

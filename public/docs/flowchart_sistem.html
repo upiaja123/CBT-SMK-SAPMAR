@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowchart Sistem - SAPTA CBT</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Panzoom for smooth canvas zooming -->
+    <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+    <!-- Top Header -->
+    <header class="bg-slate-800/95 backdrop-blur border-b border-slate-700 px-6 py-3.5 flex flex-wrap items-center justify-between sticky top-0 z-50 shadow-md">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center font-extrabold text-white shadow-lg shadow-teal-500/30">
+                FC
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-base sm:text-lg font-bold text-white tracking-wide">Flowchart Sistem</h1>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/30">End-to-End CBT Flow</span>
+                </div>
+                <p class="text-xs text-slate-400">Sistem Computer Based Test — SAPTA CBT (Berdasarkan Format Referensi)</p>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex items-center gap-2 mt-2 sm:mt-0 flex-wrap">
+            <button id="zoom-in" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-semibold border border-slate-600 transition shadow-sm">
+                🔍 Perbesar
+            </button>
+            <button id="zoom-out" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-semibold border border-slate-600 transition shadow-sm">
+                🔎 Perkecil
+            </button>
+            <button id="zoom-reset" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-semibold border border-slate-600 transition shadow-sm">
+                ↺ Reset
+            </button>
+            <a href="flowchart_sistem_cbt.png" download="Flowchart_Sistem_CBT_SAPMAR.png" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5">
+                ⬇️ Unduh PNG
+            </a>
+            <a href="flowchart_sistem_cbt.svg" download="Flowchart_Sistem_CBT_SAPMAR.svg" class="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5">
+                ⬇️ Unduh SVG
+            </a>
+            <button onclick="window.print()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5">
+                🖨️ Cetak
+            </button>
+        </div>
+    </header>
+
+    <!-- Canvas Container -->
+    <main class="flex-1 overflow-hidden relative p-4 flex flex-col items-center justify-center">
+        <div id="diagram-wrapper" class="w-full h-[84vh] bg-slate-950 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden relative cursor-grab active:cursor-grabbing flex items-center justify-center">
+            
+            <!-- Zoomable & Draggable Target -->
+            <div id="panzoom-element" class="p-4 origin-top">
+                <img src="flowchart_sistem_cbt.svg" alt="Flowchart Sistem CBT SAPMAR" class="max-w-none shadow-2xl rounded-xl bg-white select-none pointer-events-none" style="width: 1300px; height: auto;" />
+            </div>
+
+            <!-- Floating Quick Guide -->
+            <div class="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs text-slate-300 shadow-xl pointer-events-none flex items-center gap-3">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-teal-400 animate-pulse"></span>
+                <span><strong>Tips:</strong> Klik & seret untuk melihat seluruh alur | Gunakan roda mouse untuk zoom in/out</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Metadata Panel -->
+    <footer class="bg-slate-800/90 border-t border-slate-700 px-6 py-3 text-xs text-slate-400 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-6">
+            <span><strong>Tahapan:</strong> 16 Titik Proses End-to-End</span>
+            <span><strong>Mekanisme Real-Time:</strong> Autosave, Monitoring & Sensor Integritas</span>
+            <span><strong>Evaluasi:</strong> Penilaian Otomatis & Esai Manual, Persetujuan Guru, Ekspor & Arsip</span>
+        </div>
+        <div>
+            <span>Sistem CBT SAPMAR © 2026</span>
+        </div>
+    </footer>
+
+    <!-- Panzoom Init -->
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            const elem = document.getElementById('panzoom-element');
+            const panzoom = Panzoom(elem, {
+                maxScale: 3.5,
+                minScale: 0.25,
+                initialScale: 0.44,
+                contain: 'outside'
+            });
+
+            panzoom.zoom(0.44, { animate: false });
+
+            elem.parentElement.addEventListener('wheel', panzoom.zoomWithWheel);
+
+            document.getElementById('zoom-in').addEventListener('click', panzoom.zoomIn);
+            document.getElementById('zoom-out').addEventListener('click', panzoom.zoomOut);
+            document.getElementById('zoom-reset').addEventListener('click', function() {
+                panzoom.reset();
+                panzoom.zoom(0.44, { animate: true });
+            });
+        });
+    </script>
+</body>
+</html>
+
